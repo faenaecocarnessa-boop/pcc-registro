@@ -1,202 +1,426 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>PCC Registro</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PCC 1 - Registro</title>
 
-<style>
-body { font-family: Arial; margin: 10px; }
+  <style>
+    :root{
+      --bg:#f0f2f5; --card:#fff; --text:#111; --border:#d0d7de; --blue:#2563eb;
+    }
+    body{ margin:0; padding:10px; font-family:Arial, sans-serif; background:var(--bg); color:var(--text); }
 
-.encabezado table { width:100%; border-collapse:collapse; }
-.encabezado td { border:2px solid black; padding:8px; }
-.logo { width:20%; text-align:center; }
-.titulo { width:60%; text-align:center; }
-.info { width:20%; text-align:center; background:#cfefff; }
+    /* Encabezado */
+    .encabezado table{ width:100%; border-collapse:collapse; margin-bottom:10px; background:#fff; }
+    .encabezado td{ border:2px solid #000; padding:8px; vertical-align:middle; }
+    .logo{ width:20%; text-align:center; }
+    .titulo{ width:60%; text-align:center; font-size:13px; line-height:1.2; }
+    .titulo span{ color:#0b3d91; font-weight:700; }
+    .info{ width:20%; text-align:center; background:#cfefff; font-size:12px; line-height:1.25; }
 
-.tabs { display:flex; margin-bottom:10px; }
-.tab-btn { flex:1; padding:10px; cursor:pointer; font-weight:bold; }
+    /* Tabs */
+    .tabs{ display:flex; gap:6px; margin-bottom:10px; }
+    .tab-btn{
+      flex:1; padding:12px; border:none; border-radius:10px; cursor:pointer;
+      font-weight:700; background:#cbd5e1; color:#475569;
+    }
+    .tab-btn.active{ background:var(--blue); color:#fff; }
+    .tab-content{ display:none; }
+    .tab-content.active{ display:block; }
 
-.tab-content { display:none; }
-.tab-content.active { display:block; }
+    /* Botonera */
+    .toolbar{ display:flex; gap:8px; flex-wrap:wrap; margin:10px 0; }
+    .toolbar button{
+      padding:10px 12px; border:none; border-radius:10px; cursor:pointer;
+      background:var(--blue); color:#fff; font-weight:700;
+    }
+    .toolbar button.danger{ background:#ef4444; }
+    .toolbar button.secondary{ background:#0ea5e9; }
 
-.card-entry { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+    /* Form */
+    .card-entry{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .row{ display:flex; flex-direction:column; gap:6px; }
+    label{ font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; }
+    input, select, textarea{
+      width:100%; box-sizing:border-box;
+      padding:10px; border-radius:10px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size:14px;
+    }
+    textarea{ resize:vertical; }
 
-table { width:100%; border-collapse:collapse; }
-th, td { border:1px solid black; padding:6px; text-align:center; }
+    /* Tables */
+    .table-container{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:auto;
+    }
+    table{ width:100%; border-collapse:collapse; }
+    th, td{ border-bottom:1px solid var(--border); padding:10px; text-align:center; font-size:13px; }
+    th{ background:#f8fafc; color:#64748b; font-weight:700; }
+    td.left{ text-align:left; }
 
-</style>
+    /* Print */
+    #print-replica{ display:none; }
+    @media print{
+      .tabs, .toolbar, .card-entry, .table-container { display:none !important; }
+      #print-replica{ display:block !important; }
+      body > .encabezado{ display:none !important; } /* evita encabezado duplicado */
+      @page{ size:A4 landscape; margin:0.6cm; }
+      .p-table{ width:100%; border-collapse:collapse; table-layout:fixed; }
+      .p-table th, .p-table td{ border:1px solid #000; padding:4px; font-size:9pt; }
+      .p-table th{ background:#eee; }
+      .p-title{ text-align:center; font-weight:700; margin:8px 0 10px; }
+    }
+  </style>
 </head>
 
 <body>
 
-<!-- ENCABEZADO -->
-<div class="encabezado">
-<table>
-<tr>
-<td class="logo">LOGO</td>
-<td class="titulo">
-<b>SISTEMA DE GESTIÓN DE CALIDAD</b><br>
-INSPECCIÓN DE CARCASAS ANTES DEL LAVADO<br>
-<b>HACCP - PCC 1 FAENA</b>
-</td>
-<td class="info">
-RG-HCCP - PCC - 307/1<br>
-Emisión: 23/02/2026<br>
-Rev. 12
-</td>
-</tr>
-</table>
-</div>
+  <!-- ENCABEZADO (pantalla) -->
+  <div class="encabezado">
+    <table>
+      <tr>
+        <td class="logo"><b>LOGO</b></td>
+        <td class="titulo">
+          <strong>SISTEMA DE GESTIÓN DE CALIDAD</strong><br>
+          INSPECCIÓN DE CARCASAS ANTES DEL LAVADO<br>
+          <span>HACCP - PCC 1 FAENA</span>
+        </td>
+        <td class="info">
+          RG-HCCP - PCC - 307/1<br>
+          Emisión: 23/02/2026<br>
+          Rev. 12
+        </td>
+      </tr>
+    </table>
+  </div>
 
-<!-- BOTONES -->
-<div class="tabs">
-<button class="tab-btn active" onclick="openTab(event,'tab1')">REGISTRO</button>
-<button class="tab-btn" onclick="openTab(event,'tab2')">ACCIONES</button>
-</div>
+  <div class="toolbar">
+    <button class="secondary" onclick="capTime()">⏱️ Tomar hora</button>
+    <button onclick="imprimirTodo()">🖨️ Imprimir completo</button>
+    <button class="danger" onclick="clearAll()">🗑️ Borrar todo</button>
+  </div>
 
-<!-- REGISTRO -->
-<div id="tab1" class="tab-content active">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="openTab(event,'tab1')">REGISTRO</button>
+    <button class="tab-btn" onclick="openTab(event,'tab2')">ACCIONES</button>
+  </div>
 
-<div class="card-entry">
-<input id="in-g" readonly placeholder="Garrón">
-<input type="time" id="in-h">
-<select id="in-b">
-<option value="0">0</option>
-<option value="1">1</option>
-</select>
-<input id="in-r" maxlength="2" placeholder="Resp" oninput="guardar(this)">
-</div>
+  <!-- TAB 1: REGISTRO -->
+  <div id="tab1" class="tab-content active">
+    <div class="card-entry">
+      <div class="row">
+        <label>GARRÓN</label>
+        <input id="in-g" readonly>
+      </div>
+      <div class="row">
+        <label>HORA</label>
+        <input type="time" id="in-h" step="60">
+      </div>
+      <div class="row">
+        <label>DESVÍO (0/1)</label>
+        <select id="in-b">
+          <option value="0">0</option>
+          <option value="1">1</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>RESP (2 letras)</label>
+        <input id="in-r" maxlength="2" placeholder="AA" oninput="guardarRegistro(this)">
+      </div>
+    </div>
 
-<table>
-<thead>
-<tr>
-<th>GARRÓN</th>
-<th>HORA</th>
-<th>0/1</th>
-<th>RESP</th>
-</tr>
-</thead>
-<tbody id="tableBody"></tbody>
-</table>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr><th>GARRÓN</th><th>HORA</th><th>0/1</th><th>RESP</th></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
 
-</div>
+  <!-- TAB 2: ACCIONES -->
+  <div id="tab2" class="tab-content">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Garrón / Lado / Ubicación</th>
+            <th style="width:90px;">Hora desvío</th>
+            <th>Acción correctiva</th>
+            <th style="width:110px;">Hora corrección</th>
+            <th>Restablecimiento</th>
+            <th>Preventiva</th>
+            <th style="width:140px;">Encargado</th>
+          </tr>
+        </thead>
+        <tbody id="actionsBody"></tbody>
+      </table>
+    </div>
+  </div>
 
-<!-- ACCIONES -->
-<div id="tab2" class="tab-content">
-
-<table>
-<thead>
-<tr>
-<th>Detalle</th>
-<th>Hora</th>
-<th>Acción correctiva</th>
-<th>Hora corr.</th>
-<th>Restablecimiento</th>
-<th>Preventiva</th>
-<th>Encargado</th>
-</tr>
-</thead>
-<tbody id="actionsBody"></tbody>
-</table>
-
-</div>
+  <div id="print-replica"></div>
 
 <script>
+  const LS_KEY = "logs_pcc_v2"; // clave nueva para evitar choques con versiones viejas
+  let data = [];
 
-let data = [];
+  function loadData(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      data = raw ? JSON.parse(raw) : [];
+      if(!Array.isArray(data)) data = [];
+    } catch(e){
+      data = [];
+    }
 
-// TAB
-function openTab(e,id){
-document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-document.getElementById(id).classList.add('active');
-}
+    // Asegura campos (por si hay registros viejos)
+    data = data.map(d => ({
+      g: d.g ?? "",
+      h: d.h ?? "",
+      b: d.b ?? "0",
+      r: d.r ?? "",
+      lado: d.lado ?? "",
+      ubicacion: d.ubicacion ?? "",
+      accionCorrectiva: d.accionCorrectiva ?? "",
+      horaCorreccion: d.horaCorreccion ?? "",
+      restablecimiento: d.restablecimiento ?? "",
+      preventiva: d.preventiva ?? "",
+      encargado: d.encargado ?? ""
+    }));
+  }
 
-// HORA AUTOMATICA (ARREGLADA)
-function capTime(){
-let now = new Date();
-let h = String(now.getHours()).padStart(2,'0');
-let m = String(now.getMinutes()).padStart(2,'0');
-document.getElementById('in-h').value = h+":"+m;
-}
+  function saveData(){
+    localStorage.setItem(LS_KEY, JSON.stringify(data));
+  }
 
-capTime();
+  window.onload = () => {
+    loadData();
+    capTime();
+    updateGarron();
+    render();
+  };
 
-// GUARDAR
-function guardar(el){
-if(el.value.length==2){
+  function openTab(evt, id){
+    document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    evt.currentTarget.classList.add("active");
+  }
 
-data.push({
-g:data.length+1,
-h:document.getElementById('in-h').value,
-b:document.getElementById('in-b').value,
-r:el.value.toUpperCase()
-});
+  // Hora del dispositivo (HH:MM) compatible tablet
+  function capTime(){
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    document.getElementById("in-h").value = `${hh}:${mm}`;
+  }
 
-el.value="";
-render();
-capTime();
-}
-}
+  function updateGarron(){
+    document.getElementById("in-g").value = data.length + 1;
+  }
 
-// RENDER
-function render(){
+  // Se guarda el registro cuando RESP tiene 2 letras
+  function guardarRegistro(el){
+    el.value = el.value.replace(/[^A-Za-z]/g,'').toUpperCase();
+    if(el.value.length === 2){
+      data.push({
+        g: data.length + 1,
+        h: document.getElementById("in-h").value || "",
+        b: document.getElementById("in-b").value || "0",
+        r: el.value,
+        lado: "",
+        ubicacion: "",
+        accionCorrectiva: "",
+        horaCorreccion: "",
+        restablecimiento: "",
+        preventiva: "",
+        encargado: ""
+      });
+      el.value = "";
+      saveData();
+      updateGarron();
+      render();
+      capTime();
+    }
+  }
 
-// REGISTRO
-document.getElementById('tableBody').innerHTML =
-data.map(d=>`
-<tr>
-<td>${d.g}</td>
-<td>${d.h}</td>
-<td>${d.b}</td>
-<td>${d.r}</td>
-</tr>
-`).join('');
+  function saveField(idx, field, value){
+    data[idx][field] = value;
+    saveData();
+  }
 
-// FILTRO DESVIOS
-let devs = data.filter(d=>d.b=="1");
+  function render(){
+    // REGISTRO
+    document.getElementById("tableBody").innerHTML = data.slice().reverse()
+      .map(d => `<tr><td>${d.g}</td><td>${d.h}</td><td>${d.b}</td><td>${d.r}</td></tr>`)
+      .join("");
 
-// ACCIONES
-document.getElementById('actionsBody').innerHTML =
-devs.map(d=>`
-<tr>
+    // ACCIONES solo desvíos = 1 (con índice real)
+    const devs = data.map((d,idx)=>({d,idx})).filter(x => x.d.b === "1");
 
-<td style="text-align:left">
+    document.getElementById("actionsBody").innerHTML = devs.map(x => {
+      const d = x.d, idx = x.idx;
+      return `
+        <tr>
+          <td class="left">
+            <div><b>Garrón ${d.g}</b></div>
+            <div style="margin-top:8px; display:grid; gap:6px;">
+              <select onchange="saveField(${idx},'lado',this.value)">
+                <option value="">Lado</option>
+                <option value="Izquierdo" ${d.lado==="Izquierdo" ? "selected":""}>Izquierdo</option>
+                <option value="Derecho" ${d.lado==="Derecho" ? "selected":""}>Derecho</option>
+              </select>
 
-<b>Garrón ${d.g}</b><br><br>
+              <select onchange="saveField(${idx},'ubicacion',this.value)">
+                <option value="">Ubicación</option>
+                <option value="Culata" ${d.ubicacion==="Culata" ? "selected":""}>Culata</option>
+                <option value="Nalga - Bola de lomo" ${d.ubicacion==="Nalga - Bola de lomo" ? "selected":""}>Nalga - Bola de lomo</option>
+                <option value="Bifes - Cuadril" ${d.ubicacion==="Bifes - Cuadril" ? "selected":""}>Bifes - Cuadril</option>
+                <option value="Pecho - Matambre - Ijada" ${d.ubicacion==="Pecho - Matambre - Ijada" ? "selected":""}>Pecho - Matambre - Ijada</option>
+                <option value="Lomo - Costillas" ${d.ubicacion==="Lomo - Costillas" ? "selected":""}>Lomo - Costillas</option>
+                <option value="Brazuelo - Cogote" ${d.ubicacion==="Brazuelo - Cogote" ? "selected":""}>Brazuelo - Cogote</option>
+                <option value="Marucha - Paleta" ${d.ubicacion==="Marucha - Paleta" ? "selected":""}>Marucha - Paleta</option>
+                <option value="Vacío - Entraña" ${d.ubicacion==="Vacío - Entraña" ? "selected":""}>Vacío - Entraña</option>
+              </select>
+            </div>
+          </td>
 
-<select>
-<option>Lado</option>
-<option>Izquierdo</option>
-<option>Derecho</option>
-</select><br><br>
+          <td>${d.h}</td>
 
-<select>
-<option>Ubicación</option>
-<option>Culata</option>
-<option>Nalga - Bola de lomo</option>
-<option>Bifes - Cuadril</option>
-<option>Pecho - Matambre - Ijada</option>
-<option>Lomo - Costillas</option>
-<option>Brazuelo - Cogote</option>
-<option>Marucha - Paleta</option>
-<option>Vacío - Entraña</option>
-</select>
+          <td><textarea rows="4" oninput="saveField(${idx},'accionCorrectiva',this.value)">${escapeHtml(d.accionCorrectiva)}</textarea></td>
 
-</td>
+          <td><input type="time" step="60" value="${d.horaCorreccion||""}"
+              onchange="saveField(${idx},'horaCorreccion',this.value)"></td>
 
-<td>${d.h}</td>
-<td><textarea></textarea></td>
-<td><input type="time"></td>
-<td><textarea></textarea></td>
-<td><textarea></textarea></td>
-<td><input></td>
+          <td><textarea rows="4" oninput="saveField(${idx},'restablecimiento',this.value)">${escapeHtml(d.restablecimiento)}</textarea></td>
 
-</tr>
-`).join('');
+          <td><textarea rows="4" oninput="saveField(${idx},'preventiva',this.value)">${escapeHtml(d.preventiva)}</textarea></td>
 
-document.getElementById('in-g').value = data.length+1;
-}
+          <td><input value="${escapeAttr(d.encargado)}" oninput="saveField(${idx},'encargado',this.value)"></td>
+        </tr>
+      `;
+    }).join("");
+  }
 
+  // Escape helpers (para que no se rompa el HTML al guardar textos)
+  function escapeHtml(s){
+    return (s||"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;");
+  }
+  function escapeAttr(s){
+    return (s||"")
+      .replaceAll("&","&amp;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;");
+  }
+
+  function clearAll(){
+    if(confirm("¿Borrar todo el registro guardado en este dispositivo?")){
+      data = [];
+      localStorage.removeItem(LS_KEY);
+      updateGarron();
+      render();
+      capTime();
+    }
+  }
+
+  // IMPRIMIR TODO (registro + acciones completas)
+  function imprimirTodo(){
+    // Encabezado para impresión (igual al de arriba)
+    const header = `
+      <div class="encabezado">
+        <table>
+          <tr>
+            <td class="logo"><b>LOGO</b></td>
+            <td class="titulo">
+              <strong>SISTEMA DE GESTIÓN DE CALIDAD</strong><br>
+              INSPECCIÓN DE CARCASAS ANTES DEL LAVADO<br>
+              <span>HACCP - PCC 1 FAENA</span>
+            </td>
+            <td class="info">
+              RG-HCCP - PCC - 307/1<br>
+              Emisión: 23/02/2026<br>
+              Rev. 12
+            </td>
+          </tr>
+        </table>
+      </div>
+    `;
+
+    // Registro
+    let html = `<div class="print-page">`;
+    html += header;
+    html += `<div class="p-title">REGISTRO PCC 1 - ${new Date().toLocaleDateString("es-AR")}</div>`;
+    html += `
+      <table class="p-table">
+        <thead>
+          <tr><th>Garrón</th><th>Hora</th><th>0/1</th><th>Resp</th></tr>
+        </thead>
+        <tbody>
+          ${data.map(d=>`<tr><td>${d.g}</td><td>${d.h}</td><td>${d.b}</td><td>${d.r}</td></tr>`).join("")}
+        </tbody>
+      </table>
+    `;
+
+    // Acciones
+    const devs = data.filter(d=>d.b==="1");
+    html += header;
+    html += `<div class="p-title">ACCIONES CORRECTIVAS / PREVENTIVAS</div>`;
+    html += `
+      <table class="p-table">
+        <thead>
+          <tr>
+            <th>Garrón</th>
+            <th>Lado</th>
+            <th>Ubicación</th>
+            <th>Hora desvío</th>
+            <th>Acción correctiva</th>
+            <th>Hora corrección</th>
+            <th>Restablecimiento</th>
+            <th>Preventiva</th>
+            <th>Encargado</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${devs.map(d=>`
+            <tr>
+              <td>${d.g}</td>
+              <td>${d.lado || ""}</td>
+              <td>${d.ubicacion || ""}</td>
+              <td>${d.h || ""}</td>
+              <td>${escapeHtml(d.accionCorrectiva)}</td>
+              <td>${d.horaCorreccion || ""}</td>
+              <td>${escapeHtml(d.restablecimiento)}</td>
+              <td>${escapeHtml(d.preventiva)}</td>
+              <td>${escapeHtml(d.encargado)}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+    html += `</div>`;
+
+    document.getElementById("print-replica").innerHTML = html;
+    setTimeout(()=>window.print(), 200);
+  }
 </script>
 
 </body>

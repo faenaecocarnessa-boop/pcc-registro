@@ -5,130 +5,100 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PCC 1 - Registro</title>
 
+  <!-- Firma digital (Signature Pad) -->
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
   <style>
     :root{
       --bg:#f0f2f5; --card:#fff; --text:#111; --border:#d0d7de; --blue:#2563eb;
+      --danger:#ef4444; --ok:#16a34a; --muted:#6b7280;
     }
-    body{ margin:0; padding:10px; font-family:Arial, sans-serif; background:var(--bg); color:var(--text); }
+    body{ margin:0; padding:10px; font-family: Arial, sans-serif; background:var(--bg); color:var(--text); }
 
     /* Encabezado */
-    .encabezado table{ width:100%; border-collapse:collapse; margin-bottom:10px; background:#fff; }
-    .encabezado td{ border:2px solid #000; padding:8px; vertical-align:middle; }
-    .logo{ width:20%; text-align:center; }
-    .logo img{
-      width:140px;
-      max-width:100%;
-      height:auto;
-      display:block;
-      margin:0 auto;
-    }
-    .titulo{ width:60%; text-align:center; font-size:13px; line-height:1.2; }
+    .encabezado table { width:100%; border-collapse:collapse; margin-bottom:10px; background:#fff; }
+    .encabezado td { border:2px solid black; padding:8px; vertical-align:middle; }
+    .logo { width:20%; text-align:center; }
+    .logo img{ max-width:140px; max-height:70px; object-fit:contain; }
+    .titulo { width:60%; text-align:center; font-size:13px; line-height:1.2; }
     .titulo span{ color:#0b3d91; font-weight:700; }
-    .info{ width:20%; text-align:center; background:#cfefff; font-size:12px; line-height:1.25; }
+    .info { width:20%; text-align:center; background:#cfefff; font-size:12px; line-height:1.25; }
 
-    /* Tabs */
-    .tabs{ display:flex; gap:6px; margin-bottom:10px; }
-    .tab-btn{
-      flex:1; padding:12px; border:none; border-radius:10px; cursor:pointer;
-      font-weight:700; background:#cbd5e1; color:#475569;
-    }
-    .tab-btn.active{ background:var(--blue); color:#fff; }
-    .tab-content{ display:none; }
-    .tab-content.active{ display:block; }
-
-    /* Botonera */
+    /* Toolbar */
     .toolbar{ display:flex; gap:8px; flex-wrap:wrap; margin:10px 0; }
     .toolbar button{
       padding:10px 12px; border:none; border-radius:10px; cursor:pointer;
-      background:var(--blue); color:#fff; font-weight:700;
+      background:var(--blue); color:#fff; font-weight:bold;
     }
-    .toolbar button.danger{ background:#ef4444; }
-    .toolbar button.secondary{ background:#0ea5e9; }
+    .toolbar button.danger{ background:var(--danger); }
+    .toolbar button.ok{ background:var(--ok); }
+    .toolbar button.gray{ background:#64748b; }
 
-    /* Form */
-    .card-entry{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:12px;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      margin-bottom:10px;
-    }
-    .row{ display:flex; flex-direction:column; gap:6px; }
-    label{ font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; }
+    /* Tabs */
+    .tabs { display:flex; gap:6px; margin-bottom:10px; }
+    .tab-btn { flex:1; padding:12px; cursor:pointer; font-weight:bold; border:none; border-radius:10px; background:#cbd5e1; color:#334155; }
+    .tab-btn.active{ background:var(--blue); color:#fff; }
+
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+
+    /* Entrada */
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; margin-bottom:10px; }
+    .card-entry { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    label{ font-size:11px; font-weight:bold; color:var(--muted); text-transform:uppercase; }
     input, select, textarea{
       width:100%; box-sizing:border-box;
-      padding:10px; border-radius:10px;
-      border:1px solid var(--border);
-      background:#fff;
-      font-size:14px;
+      padding:10px; border-radius:10px; border:1px solid var(--border);
+      background:#fff; font-size:14px;
     }
     textarea{ resize:vertical; }
 
-    /* Tables */
-    .table-container{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:14px;
-      overflow:auto;
-    }
-    table{ width:100%; border-collapse:collapse; }
-    th, td{ border-bottom:1px solid var(--border); padding:10px; text-align:center; font-size:13px; }
-    th{ background:#f8fafc; color:#64748b; font-weight:700; }
+    /* Tablas */
+    .table-wrap{ background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:auto; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { border-bottom:1px solid var(--border); padding:8px; text-align:center; font-size:13px; }
+    th { background:#f8fafc; color:#64748b; font-weight:bold; position:sticky; top:0; }
     td.left{ text-align:left; }
 
-    /* Firmas (pantalla) */
-    .sig-card{
-      margin-top:12px;
-      background:#fff;
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:12px;
-    }
-    .sig-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-    }
-    .sig-box-title{ font-weight:700; margin-bottom:6px; display:block; }
-    .sig-canvas{
-      width:100%;
-      border:1px solid #999;
-      border-radius:10px;
-      background:#fff;
-      touch-action:none; /* importante para que funcione con touch */
-    }
-    .sig-actions{ margin-top:8px; display:flex; gap:8px; }
+    /* Firmas */
+    .sig-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .sig-box{ border:1px solid var(--border); border-radius:14px; padding:10px; background:#fff; }
+    .sig-actions{ display:flex; gap:8px; margin-top:8px; }
+    .sig-actions button{ flex:1; padding:10px; border:none; border-radius:10px; cursor:pointer; font-weight:bold; }
+    .sig-actions .clear{ background:var(--danger); color:#fff; }
+    .sig-actions .save{ background:var(--ok); color:#fff; }
 
-    /* Print */
+    canvas{ width:100%; height:120px; border:1px solid #000; border-radius:10px; touch-action: none; }
+
+    /* Impresión */
     #print-replica{ display:none; }
     @media print{
-      .tabs, .toolbar, .card-entry, .table-container, .sig-card { display:none !important; }
+      .tabs, .toolbar, .card, .table-wrap { display:none !important; }
       #print-replica{ display:block !important; }
-      body > .encabezado{ display:none !important; } /* evita encabezado duplicado */
+      body{ background:#fff; padding:0; }
       @page{ size:A4 landscape; margin:0.6cm; }
       .p-table{ width:100%; border-collapse:collapse; table-layout:fixed; }
       .p-table th, .p-table td{ border:1px solid #000; padding:4px; font-size:9pt; vertical-align:top; }
       .p-table th{ background:#eee; }
-      .p-title{ text-align:center; font-weight:700; margin:8px 0 10px; }
-      .sign-row{ margin-top:14px; display:flex; justify-content:space-between; gap:20px; }
-      .sign-cell{ flex:1; }
-      .sign-box{ border-top:1px solid #000; padding-top:6px; text-align:center; font-weight:700; }
-      .sign-img{ width:240px; height:auto; margin-top:6px; }
+      .p-title{ text-align:center; font-weight:bold; margin:8px 0 10px; }
+      .p-sig-wrap{ display:flex; gap:16px; margin-top:12px; }
+      .p-sig{ width:50%; }
+      .p-sig img{ max-width:100%; max-height:120px; border:1px solid #000; }
+      .small{ font-size:9pt; color:#111; }
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ENCABEZADO (pantalla) -->
+  <!-- ENCABEZADO -->
   <div class="encabezado">
     <table>
       <tr>
         <td class="logo">
-          <img src="logo.jpg.jpeg" alt="Logo">
+          <!-- Cambiá el nombre del archivo si tu logo se llama distinto -->
+          <img src="logo.jpg.jpeg" alt="Logo"
+               onerror="this.style.display='none'; this.parentNode.innerHTML='(logo no encontrado)';">
         </td>
         <td class="titulo">
           <strong>SISTEMA DE GESTIÓN DE CALIDAD</strong><br>
@@ -145,54 +115,47 @@
   </div>
 
   <div class="toolbar">
-    <button class="secondary" onclick="capTime()">⏱️ Tomar hora</button>
-    <button onclick="imprimirTodo()">🖨️ Imprimir completo</button>
-    <button onclick="pdf()">📄 PDF</button>
+    <button class="gray" onclick="capTime()">⏱️ Tomar hora</button>
+    <button onclick="imprimirTodo()">🖨️ PDF / IMPRIMIR COMPLETO</button>
     <button class="danger" onclick="clearAll()">🗑️ Borrar todo</button>
-    <button class="danger" onclick="clearSignatures()">🗑️ Borrar firmas</button>
   </div>
 
   <div class="tabs">
     <button class="tab-btn active" onclick="openTab(event,'tab1')">REGISTRO</button>
     <button class="tab-btn" onclick="openTab(event,'tab2')">ACCIONES</button>
+    <button class="tab-btn" onclick="openTab(event,'tab3')">FIRMAS</button>
   </div>
 
   <!-- TAB 1: REGISTRO -->
   <div id="tab1" class="tab-content active">
-    <div class="card-entry">
-      <div class="row">
-        <label>GARRÓN</label>
-        <input id="in-g" readonly>
+    <div class="card">
+      <div class="card-entry">
+        <div>
+          <label>Garrón (automático)</label>
+          <input id="in-g" readonly>
+        </div>
+        <div>
+          <label>Hora</label>
+          <input type="time" id="in-h" step="60">
+        </div>
+        <div>
+          <label>Desvío (0/1)</label>
+          <select id="in-b">
+            <option value="0">0</option>
+            <option value="1">1</option>
+          </select>
+        </div>
+        <div>
+          <label>Resp (2 letras)</label>
+          <input id="in-r" maxlength="2" placeholder="AA" oninput="guardarRegistro(this)">
+        </div>
       </div>
-
-      <div class="row">
-        <label>HORA</label>
-        <input type="time" id="in-h" step="60">
-      </div>
-
-      <div class="row">
-        <label>DESVÍO (0/1)</label>
-        <select id="in-b">
-          <option value="0">0</option>
-          <option value="1">1</option>
-        </select>
-      </div>
-
-      <div class="row">
-        <label>RESP (desplegable)</label>
-        <select id="in-r" onchange="guardarRegistroSelect(this)">
-          <option value="">RESP</option>
-          <!-- Editá estas iniciales como quieras -->
-          <option value="YA">YA</option>
-          <option value="MQ">MQ</option>
-          <option value="DG">DG</option>
-          <option value="AB">AB</option>
-          <option value="CM">CM</option>
-        </select>
+      <div style="margin-top:8px; color:var(--muted); font-size:12px;">
+        Nota: el registro se guarda cuando RESP tiene 2 letras.
       </div>
     </div>
 
-    <div class="table-container">
+    <div class="table-wrap">
       <table>
         <thead>
           <tr><th>GARRÓN</th><th>HORA</th><th>0/1</th><th>RESP</th></tr>
@@ -200,44 +163,21 @@
         <tbody id="tableBody"></tbody>
       </table>
     </div>
-
-    <!-- FIRMAS (DIBUJAR) -->
-    <div class="sig-card">
-      <h3 style="margin:0 0 10px;">Firmas (dibujar con lapicera)</h3>
-      <div class="sig-grid">
-        <div>
-          <span class="sig-box-title">Firma Analista</span>
-          <canvas id="sigAnalista" width="500" height="180" class="sig-canvas"></canvas>
-          <div class="sig-actions">
-            <button type="button" onclick="clearSig('A')">Limpiar</button>
-          </div>
-        </div>
-
-        <div>
-          <span class="sig-box-title">Firma Verificador</span>
-          <canvas id="sigVerificador" width="500" height="180" class="sig-canvas"></canvas>
-          <div class="sig-actions">
-            <button type="button" onclick="clearSig('V')">Limpiar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
 
   <!-- TAB 2: ACCIONES -->
   <div id="tab2" class="tab-content">
-    <div class="table-container">
+    <div class="table-wrap">
       <table>
         <thead>
           <tr>
             <th>Garrón / Lado / Ubicación</th>
-            <th style="width:90px;">Hora desvío</th>
+            <th style="width:95px;">Hora desvío</th>
             <th>Acción correctiva</th>
-            <th style="width:110px;">Hora corrección</th>
+            <th style="width:120px;">Hora corrección</th>
             <th>Restablecimiento</th>
             <th>Preventiva</th>
-            <th style="width:140px;">Encargado</th>
+            <th style="width:160px;">Encargado</th>
           </tr>
         </thead>
         <tbody id="actionsBody"></tbody>
@@ -245,22 +185,58 @@
     </div>
   </div>
 
+  <!-- TAB 3: FIRMAS -->
+  <div id="tab3" class="tab-content">
+    <div class="card">
+      <div class="sig-grid">
+        <div class="sig-box">
+          <div style="font-weight:bold; margin-bottom:6px;">Firma Analista</div>
+          <canvas id="sigAnalista"></canvas>
+          <div class="sig-actions">
+            <button class="clear" onclick="clearSig('analista')">Limpiar</button>
+            <button class="save" onclick="saveSigs()">Guardar</button>
+          </div>
+          <div class="small" style="margin-top:6px; color:var(--muted); font-size:12px;">
+            Se guarda en la tablet y sale en el PDF.
+          </div>
+        </div>
+
+        <div class="sig-box">
+          <div style="font-weight:bold; margin-bottom:6px;">Firma Verificador</div>
+          <canvas id="sigVerificador"></canvas>
+          <div class="sig-actions">
+            <button class="clear" onclick="clearSig('verificador')">Limpiar</button>
+            <button class="save" onclick="saveSigs()">Guardar</button>
+          </div>
+          <div class="small" style="margin-top:6px; color:var(--muted); font-size:12px;">
+            Se guarda en la tablet y sale en el PDF.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="print-replica"></div>
 
 <script>
-  // ===== DATOS REGISTRO =====
-  const LS_KEY = "logs_pcc_v4"; // clave nueva
+  /**************
+   * STORAGE
+   **************/
+  const LS_KEY_DATA = "logs_pcc_v3";
+  const LS_KEY_SIGS = "pcc_sigs_v1";
+
   let data = [];
+  let sigAnalistaPad = null;
+  let sigVerificadorPad = null;
 
   function loadData(){
     try{
-      const raw = localStorage.getItem(LS_KEY);
+      const raw = localStorage.getItem(LS_KEY_DATA);
       data = raw ? JSON.parse(raw) : [];
       if(!Array.isArray(data)) data = [];
-    } catch(e){
-      data = [];
-    }
+    }catch{ data = []; }
 
+    // asegurar campos
     data = data.map(d => ({
       g: d.g ?? "",
       h: d.h ?? "",
@@ -275,42 +251,34 @@
       encargado: d.encargado ?? ""
     }));
   }
-
   function saveData(){
-    localStorage.setItem(LS_KEY, JSON.stringify(data));
+    localStorage.setItem(LS_KEY_DATA, JSON.stringify(data));
   }
 
-  // ===== FIRMAS =====
-  const SIG_A_KEY = "sigAnalista_v1";
-  const SIG_V_KEY = "sigVerificador_v1";
-  let sigA = ""; // dataURL
-  let sigV = ""; // dataURL
-
-  function loadSignatures(){
+  function loadSigs(){
     try{
-      sigA = localStorage.getItem(SIG_A_KEY) || "";
-      sigV = localStorage.getItem(SIG_V_KEY) || "";
-    }catch(e){
-      sigA=""; sigV="";
+      const raw = localStorage.getItem(LS_KEY_SIGS);
+      return raw ? JSON.parse(raw) : { analista:"", verificador:"" };
+    }catch{
+      return { analista:"", verificador:"" };
     }
   }
-  function saveSignatures(){
-    try{
-      localStorage.setItem(SIG_A_KEY, sigA || "");
-      localStorage.setItem(SIG_V_KEY, sigV || "");
-    }catch(e){}
+  function saveSigsToLS(analistaDataUrl, verifDataUrl){
+    localStorage.setItem(LS_KEY_SIGS, JSON.stringify({
+      analista: analistaDataUrl || "",
+      verificador: verifDataUrl || ""
+    }));
   }
 
+  /**************
+   * INIT
+   **************/
   window.onload = () => {
     loadData();
     capTime();
     updateGarron();
     render();
-
-    // init firmas
-    loadSignatures();
-    initSignatureCanvas("sigAnalista","A");
-    initSignatureCanvas("sigVerificador","V");
+    initSignaturePads();
   };
 
   function openTab(evt, id){
@@ -320,7 +288,7 @@
     evt.currentTarget.classList.add("active");
   }
 
-  // Hora del dispositivo (HH:MM) compatible tablet
+  // Hora del dispositivo (HH:MM)
   function capTime(){
     const now = new Date();
     const hh = String(now.getHours()).padStart(2,'0');
@@ -332,30 +300,30 @@
     document.getElementById("in-g").value = data.length + 1;
   }
 
-  // Guardado por select (RESP)
-  function guardarRegistroSelect(sel){
-    const val = (sel.value || "").toUpperCase();
-    if(!val) return;
+  // Guarda registro cuando RESP tiene 2 letras
+  function guardarRegistro(el){
+    el.value = el.value.replace(/[^A-Za-z]/g,'').toUpperCase();
+    if(el.value.length === 2){
+      data.push({
+        g: data.length + 1,
+        h: document.getElementById("in-h").value || "",
+        b: document.getElementById("in-b").value || "0",
+        r: el.value,
 
-    data.push({
-      g: data.length + 1,
-      h: document.getElementById("in-h").value || "",
-      b: document.getElementById("in-b").value || "0",
-      r: val,
-      lado: "",
-      ubicacion: "",
-      accionCorrectiva: "",
-      horaCorreccion: "",
-      restablecimiento: "",
-      preventiva: "",
-      encargado: ""
-    });
-
-    sel.value = "";
-    saveData();
-    updateGarron();
-    render();
-    capTime();
+        lado: "",
+        ubicacion: "",
+        accionCorrectiva: "",
+        horaCorreccion: "",
+        restablecimiento: "",
+        preventiva: "",
+        encargado: ""
+      });
+      el.value = "";
+      saveData();
+      updateGarron();
+      render();
+      capTime();
+    }
   }
 
   function saveField(idx, field, value){
@@ -369,7 +337,7 @@
       .map(d => `<tr><td>${d.g}</td><td>${d.h}</td><td>${d.b}</td><td>${d.r}</td></tr>`)
       .join("");
 
-    // ACCIONES solo desvíos = 1 (con índice real)
+    // ACCIONES: desvíos = 1
     const devs = data.map((d,idx)=>({d,idx})).filter(x => x.d.b === "1");
 
     document.getElementById("actionsBody").innerHTML = devs.map(x => {
@@ -403,7 +371,7 @@
 
           <td><textarea rows="4" oninput="saveField(${idx},'accionCorrectiva',this.value)">${escapeHtml(d.accionCorrectiva)}</textarea></td>
 
-          <td><input type="time" step="60" value="${escapeAttr(d.horaCorreccion||"")}"
+          <td><input type="time" step="60" value="${d.horaCorreccion||""}"
               onchange="saveField(${idx},'horaCorreccion',this.value)"></td>
 
           <td><textarea rows="4" oninput="saveField(${idx},'restablecimiento',this.value)">${escapeHtml(d.restablecimiento)}</textarea></td>
@@ -416,7 +384,6 @@
     }).join("");
   }
 
-  // Escape helpers
   function escapeHtml(s){
     return (s||"")
       .replaceAll("&","&amp;")
@@ -434,29 +401,67 @@
   function clearAll(){
     if(confirm("¿Borrar todo el registro guardado en este dispositivo?")){
       data = [];
-      localStorage.removeItem(LS_KEY);
+      localStorage.removeItem(LS_KEY_DATA);
       updateGarron();
       render();
       capTime();
     }
   }
 
-  function clearSignatures(){
-    if(confirm("¿Borrar firmas guardadas en este dispositivo?")){
-      sigA = ""; sigV = "";
-      saveSignatures();
-      clearSig("A");
-      clearSig("V");
-    }
+  /**************
+   * FIRMAS
+   **************/
+  function initSignaturePads(){
+    const cA = document.getElementById("sigAnalista");
+    const cV = document.getElementById("sigVerificador");
+
+    // Ajuste de resolución para que no quede pixelado
+    resizeCanvasForHiDPI(cA);
+    resizeCanvasForHiDPI(cV);
+
+    sigAnalistaPad = new SignaturePad(cA, { minWidth: 1, maxWidth: 3 });
+    sigVerificadorPad = new SignaturePad(cV, { minWidth: 1, maxWidth: 3 });
+
+    // Cargar firmas guardadas
+    const saved = loadSigs();
+    if(saved.analista) sigAnalistaPad.fromDataURL(saved.analista);
+    if(saved.verificador) sigVerificadorPad.fromDataURL(saved.verificador);
+
+    // Guardado automático al terminar de firmar
+    sigAnalistaPad.addEventListener("endStroke", () => saveSigs());
+    sigVerificadorPad.addEventListener("endStroke", () => saveSigs());
   }
 
-  // PDF = imprimir y elegir "Guardar como PDF"
-  function pdf(){
-    imprimirTodo();
+  function resizeCanvasForHiDPI(canvas){
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    // tamaño visual
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * ratio;
+    canvas.height = rect.height * ratio;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(ratio, ratio);
   }
 
-  function headerPrintHTML(){
-    return `
+  function clearSig(who){
+    if(who === "analista") sigAnalistaPad.clear();
+    if(who === "verificador") sigVerificadorPad.clear();
+    saveSigs();
+  }
+
+  function saveSigs(){
+    const a = (sigAnalistaPad && !sigAnalistaPad.isEmpty()) ? sigAnalistaPad.toDataURL("image/png") : "";
+    const v = (sigVerificadorPad && !sigVerificadorPad.isEmpty()) ? sigVerificadorPad.toDataURL("image/png") : "";
+    saveSigsToLS(a, v);
+  }
+
+  /**************
+   * IMPRIMIR TODO
+   **************/
+  function imprimirTodo(){
+    // Tomar firmas guardadas
+    const saved = loadSigs();
+
+    const header = `
       <div class="encabezado">
         <table>
           <tr>
@@ -477,14 +482,9 @@
         </table>
       </div>
     `;
-  }
 
-  // IMPRIMIR TODO (registro + acciones) + firmas en cada hoja
-  function imprimirTodo(){
-    const header = headerPrintHTML();
+    // REGISTRO
     let html = `<div class="print-page">`;
-
-    // ====== REGISTRO ======
     html += header;
     html += `<div class="p-title">REGISTRO PCC 1 - ${new Date().toLocaleDateString("es-AR")}</div>`;
     html += `
@@ -498,22 +498,7 @@
       </table>
     `;
 
-    html += `
-      <div class="sign-row">
-        <div class="sign-cell">
-          <div class="sign-box">Analista</div>
-          ${sigA ? `<img class="sign-img" src="${sigA}">` : `<div style="height:80px;"></div>`}
-        </div>
-        <div class="sign-cell">
-          <div class="sign-box">Verificador</div>
-          ${sigV ? `<img class="sign-img" src="${sigV}">` : `<div style="height:80px;"></div>`}
-        </div>
-      </div>
-    `;
-
-    html += `<div style="page-break-before:always;"></div>`;
-
-    // ====== ACCIONES ======
+    // ACCIONES
     const devs = data.filter(d=>d.b==="1");
     html += header;
     html += `<div class="p-title">ACCIONES CORRECTIVAS / PREVENTIVAS</div>`;
@@ -536,29 +521,30 @@
           ${devs.map(d=>`
             <tr>
               <td>${d.g}</td>
-              <td>${d.lado || ""}</td>
-              <td>${d.ubicacion || ""}</td>
-              <td>${d.h || ""}</td>
-              <td>${escapeHtml(d.accionCorrectiva)}</td>
-              <td>${d.horaCorreccion || ""}</td>
-              <td>${escapeHtml(d.restablecimiento)}</td>
-              <td>${escapeHtml(d.preventiva)}</td>
-              <td>${escapeHtml(d.encargado)}</td>
+              <td>${escapeHtml(d.lado||"")}</td>
+              <td>${escapeHtml(d.ubicacion||"")}</td>
+              <td>${escapeHtml(d.h||"")}</td>
+              <td>${escapeHtml(d.accionCorrectiva||"")}</td>
+              <td>${escapeHtml(d.horaCorreccion||"")}</td>
+              <td>${escapeHtml(d.restablecimiento||"")}</td>
+              <td>${escapeHtml(d.preventiva||"")}</td>
+              <td>${escapeHtml(d.encargado||"")}</td>
             </tr>
           `).join("")}
         </tbody>
       </table>
     `;
 
+    // FIRMAS (Analista / Verificador) — MISMO TEXTO EN PANTALLA Y PDF
     html += `
-      <div class="sign-row">
-        <div class="sign-cell">
-          <div class="sign-box">Analista</div>
-          ${sigA ? `<img class="sign-img" src="${sigA}">` : `<div style="height:80px;"></div>`}
+      <div class="p-sig-wrap">
+        <div class="p-sig">
+          <div class="small"><b>Analista</b></div>
+          ${saved.analista ? `<img src="${saved.analista}" alt="Firma Analista">` : `<div class="small">(Sin firma)</div>`}
         </div>
-        <div class="sign-cell">
-          <div class="sign-box">Verificador</div>
-          ${sigV ? `<img class="sign-img" src="${sigV}">` : `<div style="height:80px;"></div>`}
+        <div class="p-sig">
+          <div class="small"><b>Verificador</b></div>
+          ${saved.verificador ? `<img src="${saved.verificador}" alt="Firma Verificador">` : `<div class="small">(Sin firma)</div>`}
         </div>
       </div>
     `;
@@ -567,93 +553,6 @@
 
     document.getElementById("print-replica").innerHTML = html;
     setTimeout(()=>window.print(), 200);
-  }
-
-  // ====== CANVAS FIRMAS: DIBUJO TOUCH/STYLUS ======
-  function initSignatureCanvas(canvasId, who){
-    const canvas = document.getElementById(canvasId);
-    if(!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    ctx.lineWidth = 2.2;
-    ctx.lineCap = "round";
-    ctx.strokeStyle = "#000";
-
-    // Cargar firma guardada
-    const existing = (who === "A") ? sigA : sigV;
-    if(existing){
-      const img = new Image();
-      img.onload = () => {
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.drawImage(img, 0,0, canvas.width, canvas.height);
-      };
-      img.src = existing;
-    }
-
-    let drawing = false;
-
-    function getPos(e){
-      const rect = canvas.getBoundingClientRect();
-      const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
-      const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
-      return {
-        x: (clientX - rect.left) * (canvas.width / rect.width),
-        y: (clientY - rect.top) * (canvas.height / rect.height)
-      };
-    }
-
-    function start(e){
-      e.preventDefault();
-      drawing = true;
-      const p = getPos(e);
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
-    }
-
-    function move(e){
-      if(!drawing) return;
-      e.preventDefault();
-      const p = getPos(e);
-      ctx.lineTo(p.x, p.y);
-      ctx.stroke();
-    }
-
-    function end(e){
-      if(!drawing) return;
-      e.preventDefault();
-      drawing = false;
-
-      const dataUrl = canvas.toDataURL("image/png");
-      if(who === "A") sigA = dataUrl; else sigV = dataUrl;
-      saveSignatures();
-    }
-
-    // Mouse
-    canvas.addEventListener("mousedown", start);
-    canvas.addEventListener("mousemove", move);
-    window.addEventListener("mouseup", end);
-
-    // Touch / stylus
-    canvas.addEventListener("touchstart", start, { passive:false });
-    canvas.addEventListener("touchmove", move, { passive:false });
-    canvas.addEventListener("touchend", end, { passive:false });
-  }
-
-  function saveSignatures(){
-    try{
-      localStorage.setItem(SIG_A_KEY, sigA || "");
-      localStorage.setItem(SIG_V_KEY, sigV || "");
-    }catch(e){}
-  }
-
-  function clearSig(who){
-    const canvas = document.getElementById(who==="A" ? "sigAnalista" : "sigVerificador");
-    if(!canvas) return;
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    if(who === "A") sigA = ""; else sigV = "";
-    saveSignatures();
   }
 </script>
 

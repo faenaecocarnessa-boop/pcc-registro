@@ -15,6 +15,13 @@
     .encabezado table{ width:100%; border-collapse:collapse; margin-bottom:10px; background:#fff; }
     .encabezado td{ border:2px solid #000; padding:8px; vertical-align:middle; }
     .logo{ width:20%; text-align:center; }
+    .logo img{
+      width:140px;
+      max-width:100%;
+      height:auto;
+      display:block;
+      margin:0 auto;
+    }
     .titulo{ width:60%; text-align:center; font-size:13px; line-height:1.2; }
     .titulo span{ color:#0b3d91; font-weight:700; }
     .info{ width:20%; text-align:center; background:#cfefff; font-size:12px; line-height:1.25; }
@@ -80,9 +87,11 @@
       body > .encabezado{ display:none !important; } /* evita encabezado duplicado */
       @page{ size:A4 landscape; margin:0.6cm; }
       .p-table{ width:100%; border-collapse:collapse; table-layout:fixed; }
-      .p-table th, .p-table td{ border:1px solid #000; padding:4px; font-size:9pt; }
+      .p-table th, .p-table td{ border:1px solid #000; padding:4px; font-size:9pt; vertical-align:top; }
       .p-table th{ background:#eee; }
       .p-title{ text-align:center; font-weight:700; margin:8px 0 10px; }
+      .sign-row{ margin-top:14px; display:flex; justify-content:space-between; gap:20px; }
+      .sign-box{ flex:1; border-top:1px solid #000; padding-top:6px; text-align:center; font-weight:700; }
     }
   </style>
 </head>
@@ -93,10 +102,9 @@
   <div class="encabezado">
     <table>
       <tr>
-    <td class="logo">
-  <img src="logo.jpg.jpeg" style="max-width:120px;">
-</td>
-</td>
+        <td class="logo">
+          <img src="logo.jpg.jpeg" alt="Logo">
+        </td>
         <td class="titulo">
           <strong>SISTEMA DE GESTIÓN DE CALIDAD</strong><br>
           INSPECCIÓN DE CARCASAS ANTES DEL LAVADO<br>
@@ -114,6 +122,7 @@
   <div class="toolbar">
     <button class="secondary" onclick="capTime()">⏱️ Tomar hora</button>
     <button onclick="imprimirTodo()">🖨️ Imprimir completo</button>
+    <button onclick="pdf()">📄 PDF</button>
     <button class="danger" onclick="clearAll()">🗑️ Borrar todo</button>
   </div>
 
@@ -129,10 +138,12 @@
         <label>GARRÓN</label>
         <input id="in-g" readonly>
       </div>
+
       <div class="row">
         <label>HORA</label>
         <input type="time" id="in-h" step="60">
       </div>
+
       <div class="row">
         <label>DESVÍO (0/1)</label>
         <select id="in-b">
@@ -140,9 +151,18 @@
           <option value="1">1</option>
         </select>
       </div>
+
       <div class="row">
-        <label>RESP (2 letras)</label>
-        <input id="in-r" maxlength="2" placeholder="AA" oninput="guardarRegistro(this)">
+        <label>RESP (desplegable)</label>
+        <select id="in-r" onchange="guardarRegistroSelect(this)">
+          <option value="">RESP</option>
+          <!-- Editá estas iniciales como quieras -->
+          <option value="YA">YA</option>
+          <option value="MQ">MQ</option>
+          <option value="WC">WC</option>
+          <option value="MD">MD</option>
+          <option value="DE">DE</option>
+        </select>
       </div>
     </div>
 
@@ -179,7 +199,7 @@
   <div id="print-replica"></div>
 
 <script>
-  const LS_KEY = "logs_pcc_v2"; // clave nueva para evitar choques con versiones viejas
+  const LS_KEY = "logs_pcc_v3"; // clave nueva para evitar choques con versiones viejas
   let data = [];
 
   function loadData(){
@@ -237,29 +257,32 @@
     document.getElementById("in-g").value = data.length + 1;
   }
 
-  // Se guarda el registro cuando RESP tiene 2 letras
-  function guardarRegistro(el){
-    el.value = el.value.replace(/[^A-Za-z]/g,'').toUpperCase();
-    if(el.value.length === 2){
-      data.push({
-        g: data.length + 1,
-        h: document.getElementById("in-h").value || "",
-        b: document.getElementById("in-b").value || "0",
-        r: el.value,
-        lado: "",
-        ubicacion: "",
-        accionCorrectiva: "",
-        horaCorreccion: "",
-        restablecimiento: "",
-        preventiva: "",
-        encargado: ""
-      });
-      el.value = "";
-      saveData();
-      updateGarron();
-      render();
-      capTime();
-    }
+  // Guardado por select (RESP)
+  function guardarRegistroSelect(sel){
+    const val = (sel.value || "").toUpperCase();
+    if(!val) return;
+
+    data.push({
+      g: data.length + 1,
+      h: document.getElementById("in-h").value || "",
+      b: document.getElementById("in-b").value || "0",
+      r: val,
+
+      // campos de acciones
+      lado: "",
+      ubicacion: "",
+      accionCorrectiva: "",
+      horaCorreccion: "",
+      restablecimiento: "",
+      preventiva: "",
+      encargado: ""
+    });
+
+    sel.value = "";
+    saveData();
+    updateGarron();
+    render();
+    capTime();
   }
 
   function saveField(idx, field, value){
@@ -307,7 +330,7 @@
 
           <td><textarea rows="4" oninput="saveField(${idx},'accionCorrectiva',this.value)">${escapeHtml(d.accionCorrectiva)}</textarea></td>
 
-          <td><input type="time" step="60" value="${d.horaCorreccion||""}"
+          <td><input type="time" step="60" value="${escapeAttr(d.horaCorreccion||"")}"
               onchange="saveField(${idx},'horaCorreccion',this.value)"></td>
 
           <td><textarea rows="4" oninput="saveField(${idx},'restablecimiento',this.value)">${escapeHtml(d.restablecimiento)}</textarea></td>
@@ -320,7 +343,7 @@
     }).join("");
   }
 
-  // Escape helpers (para que no se rompa el HTML al guardar textos)
+  // Escape helpers
   function escapeHtml(s){
     return (s||"")
       .replaceAll("&","&amp;")
@@ -345,17 +368,19 @@
     }
   }
 
-  // IMPRIMIR TODO (registro + acciones completas)
-  function imprimirTodo(){
-    // Encabezado para impresión (igual al de arriba)
-    const header = `
+  // PDF = imprimir y elegir "Guardar como PDF"
+  function pdf(){
+    imprimirTodo();
+  }
+
+  function headerPrintHTML(){
+    return `
       <div class="encabezado">
         <table>
           <tr>
             <td class="logo">
-  <img src="logo.jpg.jpeg" style="max-width:120px;">
-</td>
-</td>
+              <img src="logo.jpg.jpeg" alt="Logo">
+            </td>
             <td class="titulo">
               <strong>SISTEMA DE GESTIÓN DE CALIDAD</strong><br>
               INSPECCIÓN DE CARCASAS ANTES DEL LAVADO<br>
@@ -370,6 +395,11 @@
         </table>
       </div>
     `;
+  }
+
+  // IMPRIMIR TODO (registro + acciones completas)
+  function imprimirTodo(){
+    const header = headerPrintHTML();
 
     // Registro
     let html = `<div class="print-page">`;
@@ -422,6 +452,15 @@
         </tbody>
       </table>
     `;
+
+    // Firmas (opcional)
+    html += `
+      <div class="sign-row">
+        <div class="sign-box">Inspector / Responsable</div>
+        <div class="sign-box">Jefatura / Calidad</div>
+      </div>
+    `;
+
     html += `</div>`;
 
     document.getElementById("print-replica").innerHTML = html;
@@ -431,3 +470,4 @@
 
 </body>
 </html>
+

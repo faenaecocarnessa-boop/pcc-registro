@@ -79,10 +79,33 @@
     th{ background:#f8fafc; color:#64748b; font-weight:700; }
     td.left{ text-align:left; }
 
+    /* Firmas (pantalla) */
+    .sig-card{
+      margin-top:12px;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+    }
+    .sig-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+    .sig-box-title{ font-weight:700; margin-bottom:6px; display:block; }
+    .sig-canvas{
+      width:100%;
+      border:1px solid #999;
+      border-radius:10px;
+      background:#fff;
+      touch-action:none; /* importante para que funcione con touch */
+    }
+    .sig-actions{ margin-top:8px; display:flex; gap:8px; }
+
     /* Print */
     #print-replica{ display:none; }
     @media print{
-      .tabs, .toolbar, .card-entry, .table-container { display:none !important; }
+      .tabs, .toolbar, .card-entry, .table-container, .sig-card { display:none !important; }
       #print-replica{ display:block !important; }
       body > .encabezado{ display:none !important; } /* evita encabezado duplicado */
       @page{ size:A4 landscape; margin:0.6cm; }
@@ -91,7 +114,9 @@
       .p-table th{ background:#eee; }
       .p-title{ text-align:center; font-weight:700; margin:8px 0 10px; }
       .sign-row{ margin-top:14px; display:flex; justify-content:space-between; gap:20px; }
-      .sign-box{ flex:1; border-top:1px solid #000; padding-top:6px; text-align:center; font-weight:700; }
+      .sign-cell{ flex:1; }
+      .sign-box{ border-top:1px solid #000; padding-top:6px; text-align:center; font-weight:700; }
+      .sign-img{ width:240px; height:auto; margin-top:6px; }
     }
   </style>
 </head>
@@ -124,6 +149,7 @@
     <button onclick="imprimirTodo()">🖨️ Imprimir completo</button>
     <button onclick="pdf()">📄 PDF</button>
     <button class="danger" onclick="clearAll()">🗑️ Borrar todo</button>
+    <button class="danger" onclick="clearSignatures()">🗑️ Borrar firmas</button>
   </div>
 
   <div class="tabs">
@@ -159,9 +185,9 @@
           <!-- Editá estas iniciales como quieras -->
           <option value="YA">YA</option>
           <option value="MQ">MQ</option>
-          <option value="WC">WC</option>
-          <option value="MD">MD</option>
-          <option value="DE">DE</option>
+          <option value="DG">DG</option>
+          <option value="AB">AB</option>
+          <option value="CM">CM</option>
         </select>
       </div>
     </div>
@@ -174,6 +200,29 @@
         <tbody id="tableBody"></tbody>
       </table>
     </div>
+
+    <!-- FIRMAS (DIBUJAR) -->
+    <div class="sig-card">
+      <h3 style="margin:0 0 10px;">Firmas (dibujar con lapicera)</h3>
+      <div class="sig-grid">
+        <div>
+          <span class="sig-box-title">Firma Analista</span>
+          <canvas id="sigAnalista" width="500" height="180" class="sig-canvas"></canvas>
+          <div class="sig-actions">
+            <button type="button" onclick="clearSig('A')">Limpiar</button>
+          </div>
+        </div>
+
+        <div>
+          <span class="sig-box-title">Firma Verificador</span>
+          <canvas id="sigVerificador" width="500" height="180" class="sig-canvas"></canvas>
+          <div class="sig-actions">
+            <button type="button" onclick="clearSig('V')">Limpiar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- TAB 2: ACCIONES -->
@@ -199,7 +248,8 @@
   <div id="print-replica"></div>
 
 <script>
-  const LS_KEY = "logs_pcc_v3"; // clave nueva para evitar choques con versiones viejas
+  // ===== DATOS REGISTRO =====
+  const LS_KEY = "logs_pcc_v4"; // clave nueva
   let data = [];
 
   function loadData(){
@@ -211,7 +261,6 @@
       data = [];
     }
 
-    // Asegura campos (por si hay registros viejos)
     data = data.map(d => ({
       g: d.g ?? "",
       h: d.h ?? "",
@@ -231,11 +280,37 @@
     localStorage.setItem(LS_KEY, JSON.stringify(data));
   }
 
+  // ===== FIRMAS =====
+  const SIG_A_KEY = "sigAnalista_v1";
+  const SIG_V_KEY = "sigVerificador_v1";
+  let sigA = ""; // dataURL
+  let sigV = ""; // dataURL
+
+  function loadSignatures(){
+    try{
+      sigA = localStorage.getItem(SIG_A_KEY) || "";
+      sigV = localStorage.getItem(SIG_V_KEY) || "";
+    }catch(e){
+      sigA=""; sigV="";
+    }
+  }
+  function saveSignatures(){
+    try{
+      localStorage.setItem(SIG_A_KEY, sigA || "");
+      localStorage.setItem(SIG_V_KEY, sigV || "");
+    }catch(e){}
+  }
+
   window.onload = () => {
     loadData();
     capTime();
     updateGarron();
     render();
+
+    // init firmas
+    loadSignatures();
+    initSignatureCanvas("sigAnalista","A");
+    initSignatureCanvas("sigVerificador","V");
   };
 
   function openTab(evt, id){
@@ -267,8 +342,6 @@
       h: document.getElementById("in-h").value || "",
       b: document.getElementById("in-b").value || "0",
       r: val,
-
-      // campos de acciones
       lado: "",
       ubicacion: "",
       accionCorrectiva: "",
@@ -368,6 +441,15 @@
     }
   }
 
+  function clearSignatures(){
+    if(confirm("¿Borrar firmas guardadas en este dispositivo?")){
+      sigA = ""; sigV = "";
+      saveSignatures();
+      clearSig("A");
+      clearSig("V");
+    }
+  }
+
   // PDF = imprimir y elegir "Guardar como PDF"
   function pdf(){
     imprimirTodo();
@@ -397,12 +479,12 @@
     `;
   }
 
-  // IMPRIMIR TODO (registro + acciones completas)
+  // IMPRIMIR TODO (registro + acciones) + firmas en cada hoja
   function imprimirTodo(){
     const header = headerPrintHTML();
-
-    // Registro
     let html = `<div class="print-page">`;
+
+    // ====== REGISTRO ======
     html += header;
     html += `<div class="p-title">REGISTRO PCC 1 - ${new Date().toLocaleDateString("es-AR")}</div>`;
     html += `
@@ -416,7 +498,22 @@
       </table>
     `;
 
-    // Acciones
+    html += `
+      <div class="sign-row">
+        <div class="sign-cell">
+          <div class="sign-box">Analista</div>
+          ${sigA ? `<img class="sign-img" src="${sigA}">` : `<div style="height:80px;"></div>`}
+        </div>
+        <div class="sign-cell">
+          <div class="sign-box">Verificador</div>
+          ${sigV ? `<img class="sign-img" src="${sigV}">` : `<div style="height:80px;"></div>`}
+        </div>
+      </div>
+    `;
+
+    html += `<div style="page-break-before:always;"></div>`;
+
+    // ====== ACCIONES ======
     const devs = data.filter(d=>d.b==="1");
     html += header;
     html += `<div class="p-title">ACCIONES CORRECTIVAS / PREVENTIVAS</div>`;
@@ -453,11 +550,16 @@
       </table>
     `;
 
-    // Firmas (opcional)
     html += `
       <div class="sign-row">
-        <div class="sign-box">Inspector / Responsable</div>
-        <div class="sign-box">Jefatura / Calidad</div>
+        <div class="sign-cell">
+          <div class="sign-box">Analista</div>
+          ${sigA ? `<img class="sign-img" src="${sigA}">` : `<div style="height:80px;"></div>`}
+        </div>
+        <div class="sign-cell">
+          <div class="sign-box">Verificador</div>
+          ${sigV ? `<img class="sign-img" src="${sigV}">` : `<div style="height:80px;"></div>`}
+        </div>
       </div>
     `;
 
@@ -466,8 +568,94 @@
     document.getElementById("print-replica").innerHTML = html;
     setTimeout(()=>window.print(), 200);
   }
+
+  // ====== CANVAS FIRMAS: DIBUJO TOUCH/STYLUS ======
+  function initSignatureCanvas(canvasId, who){
+    const canvas = document.getElementById(canvasId);
+    if(!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#000";
+
+    // Cargar firma guardada
+    const existing = (who === "A") ? sigA : sigV;
+    if(existing){
+      const img = new Image();
+      img.onload = () => {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(img, 0,0, canvas.width, canvas.height);
+      };
+      img.src = existing;
+    }
+
+    let drawing = false;
+
+    function getPos(e){
+      const rect = canvas.getBoundingClientRect();
+      const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+      const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+      return {
+        x: (clientX - rect.left) * (canvas.width / rect.width),
+        y: (clientY - rect.top) * (canvas.height / rect.height)
+      };
+    }
+
+    function start(e){
+      e.preventDefault();
+      drawing = true;
+      const p = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+    }
+
+    function move(e){
+      if(!drawing) return;
+      e.preventDefault();
+      const p = getPos(e);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    }
+
+    function end(e){
+      if(!drawing) return;
+      e.preventDefault();
+      drawing = false;
+
+      const dataUrl = canvas.toDataURL("image/png");
+      if(who === "A") sigA = dataUrl; else sigV = dataUrl;
+      saveSignatures();
+    }
+
+    // Mouse
+    canvas.addEventListener("mousedown", start);
+    canvas.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", end);
+
+    // Touch / stylus
+    canvas.addEventListener("touchstart", start, { passive:false });
+    canvas.addEventListener("touchmove", move, { passive:false });
+    canvas.addEventListener("touchend", end, { passive:false });
+  }
+
+  function saveSignatures(){
+    try{
+      localStorage.setItem(SIG_A_KEY, sigA || "");
+      localStorage.setItem(SIG_V_KEY, sigV || "");
+    }catch(e){}
+  }
+
+  function clearSig(who){
+    const canvas = document.getElementById(who==="A" ? "sigAnalista" : "sigVerificador");
+    if(!canvas) return;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    if(who === "A") sigA = ""; else sigV = "";
+    saveSignatures();
+  }
 </script>
 
 </body>
 </html>
-

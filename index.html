@@ -1,217 +1,177 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carnic-data 100% register</title>
+<meta charset="UTF-8">
+<title>PCC Registro</title>
 
-    <!-- OPCIONAL (íconos). Si no te interesan, borrá esta línea -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+body { font-family: Arial; margin: 10px; }
 
-    <style>
-        :root { --bg: #f0f2f5; --card-bg: #ffffff; --text: #1a1c1e; --accent: #2563eb; --border: #e2e8f0; }
-        body.dark { --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc; --border: #334155; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 10px; }
+.encabezado table { width:100%; border-collapse:collapse; }
+.encabezado td { border:2px solid black; padding:8px; }
+.logo { width:20%; text-align:center; }
+.titulo { width:60%; text-align:center; }
+.info { width:20%; text-align:center; background:#cfefff; }
 
-        /* ✅ ENCABEZADO */
-        .encabezado table{
-            width: 100%;
-            border-collapse: collapse;
-            font-family: Arial;
-            margin-bottom: 10px;
-        }
-        .encabezado td{
-            border: 2px solid #000;
-            padding: 8px;
-            vertical-align: middle;
-        }
-        .encabezado .logo{ width: 20%; text-align: center; }
-        .encabezado .logo img{ width: 110px; max-width: 100%; height: auto; }
-        .encabezado .titulo{ width: 60%; text-align: center; font-size: 13px; line-height: 1.2; }
-        .encabezado .titulo span{ color: #0b3d91; font-weight: 700; }
-        .encabezado .info{ width: 20%; font-size: 12px; text-align: center; background: #cfefff; line-height: 1.25; }
+.tabs { display:flex; margin-bottom:10px; }
+.tab-btn { flex:1; padding:10px; cursor:pointer; font-weight:bold; }
 
-        .tabs { display: flex; gap: 5px; margin-bottom: 10px; }
-        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: #cbd5e1; color: #475569; }
-        .tab-btn.active { background: var(--accent); color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
 
-        .toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; padding: 8px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); }
-        .toolbar button { flex: 1; min-width: 65px; height: 60px; cursor: pointer; border: none; border-radius: 8px; background: var(--accent); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 9px; font-weight: bold; }
+.card-entry { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
 
-        .card-entry { background: var(--card-bg); border-radius: 16px; padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border: 1px solid var(--border); margin-bottom: 15px; }
-        .row { display: flex; flex-direction: column; gap: 5px; }
-        label { font-size: 10px; font-weight: bold; color: #64748b; text-transform: uppercase; }
-        input, select { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 12px; border-radius: 8px; font-size: 16px; width: 100%; box-sizing: border-box; font-weight: bold; }
+table { width:100%; border-collapse:collapse; }
+th, td { border:1px solid black; padding:6px; text-align:center; }
 
-        .time-btn { background: #2563eb; color: white; border: none; width: 60px; border-radius: 8px; font-size: 20px; cursor: pointer; }
-        .table-container { background: var(--card-bg); border-radius: 12px; overflow-x: auto; border: 1px solid var(--border); }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #f8fafc; padding: 10px; border-bottom: 2px solid var(--border); color: #64748b; }
-        td { padding: 10px; text-align: center; border-bottom: 1px solid var(--border); }
-
-        .actions-table textarea { width: 100%; border: none; background: transparent; color: inherit; resize: none; font-size: 12px; }
-
-        #print-replica { display: none; }
-        @media print {
-            /* Ocultamos la UI normal */
-            .tabs, .toolbar, .card-entry, .table-container { display: none !important; }
-
-            /* Mostramos el contenido para imprimir */
-            #print-replica { display: block !important; background: white; width: 100%; }
-
-            /* ✅ FIX: evita encabezado duplicado en la página 1 */
-            body > .encabezado { display: none !important; }
-            #print-replica .encabezado { display: block !important; }
-
-            @page { size: A4 landscape; margin: 0.5cm; }
-            .print-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 1px solid #000; table-layout: fixed; }
-
-            .print-table th { border: 1px solid #000; font-size: 6pt; text-align: center; padding: 2px; color: black; background: #eee !important; -webkit-print-color-adjust: exact; }
-            .print-table td { border: 1px solid #000; font-size: 7pt; text-align: center; padding: 0; color: black; overflow: hidden; }
-
-            .col-hora { width: 13.17mm; }
-            .col-encargado { width: 18mm; }
-
-            .reg-row { height: 0.55cm; }
-            .act-row { height: 3.84cm; vertical-align: top; }
-            .act-row td { padding-top: 3px; }
-
-            .signature-box { display: flex; justify-content: space-between; margin-top: 20px; font-weight: bold; font-size: 11px; padding: 0 10px; }
-        }
-    </style>
+</style>
 </head>
 
 <body>
 
-<!-- ✅ ENCABEZADO (pantalla) -->
+<!-- ENCABEZADO -->
 <div class="encabezado">
-  <table>
-    <tr>
-      <td class="logo">
-        <img src="logo.JPG" alt="Logo" />
-      </td>
-
-      <td class="titulo">
-        <strong>SISTEMA DE GESTIÓN DE CALIDAD</strong><br>
-        INSPECCIÓN DE CARCASAS ANTES DEL LAVADO<br>
-        <span>HACCP - PCC 1 FAENA</span>
-      </td>
-
-      <td class="info">
-        RG-HCCP - PCC - 307/1<br>
-        Emisión: 23/02/2025<br>
-        Rev. 12
-      </td>
-    </tr>
-  </table>
+<table>
+<tr>
+<td class="logo">LOGO</td>
+<td class="titulo">
+<b>SISTEMA DE GESTIÓN DE CALIDAD</b><br>
+INSPECCIÓN DE CARCASAS ANTES DEL LAVADO<br>
+<b>HACCP - PCC 1 FAENA</b>
+</td>
+<td class="info">
+RG-HCCP - PCC - 307/1<br>
+Emisión: 23/02/2026<br>
+Rev. 12
+</td>
+</tr>
+</table>
 </div>
 
+<!-- BOTONES -->
 <div class="tabs">
-    <button class="tab-btn active" onclick="openTab(event, 'tab1')">REGISTRO</button>
-    <button class="tab-btn" onclick="openTab(event, 'tab2')">ACCIONES</button>
+<button class="tab-btn active" onclick="openTab(event,'tab1')">REGISTRO</button>
+<button class="tab-btn" onclick="openTab(event,'tab2')">ACCIONES</button>
 </div>
 
+<!-- REGISTRO -->
 <div id="tab1" class="tab-content active">
-    <div class="toolbar">
-        <button onclick="document.body.classList.toggle('dark')"><i class="fas fa-moon"></i><span>TEMA</span></button>
-        <button onclick="prepareAndPrint()" style="background: #3b82f6;"><i class="fas fa-print"></i><span>IMPRIMIR</span></button>
-        <button onclick="exportDOC()" style="background: #2563eb;"><i class="fas fa-file-word"></i><span>DOC</span></button>
-        <button onclick="clearAll()" style="background: #ef4444;"><i class="fas fa-trash"></i><span>BORRAR</span></button>
-    </div>
 
-    <div class="card-entry">
-        <div class="row"><label>GARRÓN</label><input type="text" id="in-g" readonly></div>
-        <div class="row"><label>HORA</label>
-            <div style="display:flex; gap:5px;">
-                <input type="time" id="in-h" step="1">
-                <button class="time-btn" onclick="capTime()"><i class="fas fa-clock"></i></button>
-            </div>
-        </div>
-        <div class="row"><label>DESVÍO</label><select id="in-b"><option value="0">0</option><option value="1">1</option></select></div>
-        <div class="row"><label>RESP (AA)</label><input type="text" id="in-r" maxlength="2" oninput="validate(this)" style="text-transform:uppercase; border: 2px solid var(--accent);"></div>
-    </div>
-
-    <div class="table-container">
-        <table>
-            <thead><tr><th>GARRÓN</th><th>HORA</th><th>0/1</th><th>RESP</th></tr></thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-    </div>
+<div class="card-entry">
+<input id="in-g" readonly placeholder="Garrón">
+<input type="time" id="in-h">
+<select id="in-b">
+<option value="0">0</option>
+<option value="1">1</option>
+</select>
+<input id="in-r" maxlength="2" placeholder="Resp" oninput="guardar(this)">
 </div>
 
+<table>
+<thead>
+<tr>
+<th>GARRÓN</th>
+<th>HORA</th>
+<th>0/1</th>
+<th>RESP</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+
+</div>
+
+<!-- ACCIONES -->
 <div id="tab2" class="tab-content">
-    <div class="table-container">
-        <table class="actions-table">
-            <thead>
-                <tr>
-                    <th>Descripción de<br>desvío (Garrón)</th>
-                    <th style="width: 80px;">Hora de<br>desvío</th>
-                    <th>Acción<br>correctiva</th>
-                    <th style="width: 80px;">Hora de<br>corrección</th>
-                    <th>Restablecimiento de<br>control del proceso</th>
-                    <th>Acción<br>preventiva</th>
-                    <th style="width: 100px;">Encargado</th>
-                </tr>
-            </thead>
-            <tbody id="actionsBody"></tbody>
-        </table>
-    </div>
-</div>
 
-<div id="print-replica"></div>
+<table>
+<thead>
+<tr>
+<th>Detalle</th>
+<th>Hora</th>
+<th>Acción correctiva</th>
+<th>Hora corr.</th>
+<th>Restablecimiento</th>
+<th>Preventiva</th>
+<th>Encargado</th>
+</tr>
+</thead>
+<tbody id="actionsBody"></tbody>
+</table>
+
+</div>
 
 <script>
-    let data = JSON.parse(localStorage.getItem('logs')) || [];
-    window.onload = () => { render(); updateGarron(); capTime(); };
 
-    function openTab(evt, tabName) {
-        let i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tab-content");
-        for (i = 0; i < tabcontent.length; i++) tabcontent[i].classList.remove("active");
-        tablinks = document.getElementsByClassName("tab-btn");
-        for (i = 0; i < tablinks.length; i++) tablinks[i].classList.remove("active");
-        document.getElementById(tabName).classList.add("active");
-        evt.currentTarget.classList.add("active");
-    }
+let data = [];
 
-    function capTime() { document.getElementById('in-h').value = new Date().toTimeString().slice(0,8); }
+// TAB
+function openTab(e,id){
+document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+}
 
-    function validate(el) {
-        el.value = el.value.replace(/[^A-Za-z]/g, '').toUpperCase();
-        if (el.value.length === 2) {
-            data.push({
-                g: data.length + 1,
-                h: document.getElementById('in-h').value || "--:--",
-                b: document.getElementById('in-b').value,
-                r: el.value
-            });
-            localStorage.setItem('logs', JSON.stringify(data));
-            el.value = "";
-            updateGarron();
-            render();
-            capTime();
-        }
-    }
+// HORA AUTOMATICA (ARREGLADA)
+function capTime(){
+let now = new Date();
+let h = String(now.getHours()).padStart(2,'0');
+let m = String(now.getMinutes()).padStart(2,'0');
+document.getElementById('in-h').value = h+":"+m;
+}
 
-    function updateGarron() { document.getElementById('in-g').value = data.length + 1; }
+capTime();
 
-    function render() {
-        document.getElementById('actionsBody').innerHTML = devs
-.map(d => `<tr>
+// GUARDAR
+function guardar(el){
+if(el.value.length==2){
 
-<td>
-Garrón ${d.g}<br>
+data.push({
+g:data.length+1,
+h:document.getElementById('in-h').value,
+b:document.getElementById('in-b').value,
+r:el.value.toUpperCase()
+});
 
-<select style="width:100%; margin-top:3px;">
-<option value="">Lado</option>
+el.value="";
+render();
+capTime();
+}
+}
+
+// RENDER
+function render(){
+
+// REGISTRO
+document.getElementById('tableBody').innerHTML =
+data.map(d=>`
+<tr>
+<td>${d.g}</td>
+<td>${d.h}</td>
+<td>${d.b}</td>
+<td>${d.r}</td>
+</tr>
+`).join('');
+
+// FILTRO DESVIOS
+let devs = data.filter(d=>d.b=="1");
+
+// ACCIONES
+document.getElementById('actionsBody').innerHTML =
+devs.map(d=>`
+<tr>
+
+<td style="text-align:left">
+
+<b>Garrón ${d.g}</b><br><br>
+
+<select>
+<option>Lado</option>
 <option>Izquierdo</option>
 <option>Derecho</option>
-</select>
+</select><br><br>
 
-<select style="width:100%; margin-top:3px;">
-<option value="">Ubicación</option>
+<select>
+<option>Ubicación</option>
 <option>Culata</option>
 <option>Nalga - Bola de lomo</option>
 <option>Bifes - Cuadril</option>
@@ -225,123 +185,19 @@ Garrón ${d.g}<br>
 </td>
 
 <td>${d.h}</td>
-
-<td><textarea rows="6"></textarea></td>
-
+<td><textarea></textarea></td>
 <td><input type="time"></td>
+<td><textarea></textarea></td>
+<td><textarea></textarea></td>
+<td><input></td>
 
-<td><textarea rows="6"></textarea></td>
+</tr>
+`).join('');
 
-<td><textarea rows="6"></textarea></td>
+document.getElementById('in-g').value = data.length+1;
+}
 
-<td><input type="text"></td>
-
-</tr>`)
-.join('');   }
-
-    function clearAll() {
-        if (confirm("¿Borrar todo?")) {
-            data = [];
-            localStorage.clear();
-            render();
-            updateGarron();
-        }
-    }
-
-    /* ✅ Encabezado para imprimir (va dentro de #print-replica) */
-    function headerPrintHTML() {
-        return `
-        <div class="encabezado">
-          <table>
-            <tr>
-              <td class="logo"><img src="logo.JPG" alt="Logo"/></td>
-              <td class="titulo">
-                <strong>SISTEMA DE GESTIÓN DE CALIDAD</strong><br>
-                INSPECCIÓN DE CARCASAS ANTES DEL LAVADO<br>
-                <span>HACCP - PCC 1 FAENA</span>
-              </td>
-              <td class="info">
-                RG-HCCP - PCC - 307/1<br>
-                Emisión: Febrero/2025<br>
-                Rev. 11
-              </td>
-            </tr>
-          </table>
-        </div>`;
-    }
-
-    function buildStructureHTML() {
-        const ROWS = 33, BLOCKS = 4, PER_PAGE = 132;
-        let html = '';
-        const totalPages = Math.ceil(Math.max(data.length, 1) / PER_PAGE);
-
-        for (let p = 0; p < totalPages; p++) {
-            html += `<div class="print-page">`;
-            html += headerPrintHTML();
-            html += `<div style="text-align:center; font-size:11px; margin-bottom:5px; font-weight:bold;">
-                        REGISTRO DE CONTROL - PÁG ${p+1} - ${new Date().toLocaleDateString()}
-                     </div>`;
-            html += `<table class="print-table"><thead><tr>`;
-            for (let i = 0; i < BLOCKS; i++) html += `<th>N°</th><th>HORA</th><th>0/1</th><th>RESP</th>`;
-            html += `</tr></thead><tbody>`;
-
-            for (let i = 0; i < ROWS; i++) {
-                html += `<tr class="reg-row">`;
-                for (let j = 0; j < BLOCKS; j++) {
-                    const idx = (p * PER_PAGE) + i + (j * ROWS);
-                    const d = data[idx] || { g: '', h: '', b: '', r: '' };
-                    html += `<td>${d.g}</td><td>${d.h}</td><td>${d.b}</td><td>${d.r}</td>`;
-                }
-                html += `</tr>`;
-            }
-            html += `</tbody></table></div>`;
-        }
-
-        html += `<div class="print-page" style="page-break-before: always;">`;
-        html += headerPrintHTML();
-        html += `<div style="text-align:center; font-size:11px; margin-bottom:10px; font-weight:bold;">
-                    MEDIDAS CORRECTIVAS / PREVENTIVAS
-                 </div>`;
-        html += `<table class="print-table">
-                    <thead>
-                      <tr>
-                        <th>Descripción de desvío</th>
-                        <th class="col-hora">Hora desvío</th>
-                        <th>Acción correctiva</th>
-                        <th class="col-hora">Hora corr.</th>
-                        <th>Restablecimiento de control del proceso</th>
-                        <th>Acción preventiva</th>
-                        <th class="col-encargado">Encargado</th>
-                      </tr>
-                    </thead><tbody>`;
-
-        let devs = data.filter(d => d.b == "1");
-        for (let i = 0; i < 4; i++) {
-            let d = devs[i] || { g:'', h:'' };
-            html += `<tr class="act-row">
-                        <td>${d.g ? 'Garrón ' + d.g : ''}</td>
-                        <td>${d.h || ''}</td>
-                        <td></td><td></td><td></td><td></td><td></td>
-                     </tr>`;
-        }
-        html += `</tbody></table>`;
-        html += `<div class="signature-box"><span>Monitor: _____________________</span><span>Verificador: _____________________</span></div></div>`;
-        return html;
-    }
-
-    function prepareAndPrint() {
-        document.getElementById('print-replica').innerHTML = buildStructureHTML();
-        setTimeout(() => { window.print(); }, 300);
-    }
-
-    function exportDOC() {
-        const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org'><head><meta charset='utf-8'><style>table{border-collapse:collapse; width:100%; table-layout:fixed;} th{border:0.5pt solid black; padding:2px; font-family:Arial; font-size:6pt; text-align:center;} td{border:0.5pt solid black; padding:2px; font-family:Arial; font-size:7pt; text-align:center;} .act-row{height:108.75pt; vertical-align:top;} .col-hora{width:37.35pt;} .col-encargado{width:51pt;}</style></head><body>";
-        const blob = new Blob(['\ufeff', header + buildStructureHTML() + "</body></html>"], { type: 'application/msword' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `Reporte_${new Date().toLocaleDateString('es-ES').replace(/\//g, '-')}.doc`;
-        link.click();
-    }
 </script>
+
 </body>
 </html>

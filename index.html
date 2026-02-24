@@ -1,590 +1,210 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PCC 1 - Inspección de Carcasas</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCC1</title>
 
-  <style>
-    :root{
-      --bg:#f0f2f5; --card:#fff; --text:#111; --border:#d0d7de;
-      --blue:#2563eb; --red:#ef4444; --sky:#0ea5e9; --green:#16a34a;
-      --muted:#64748b;
-    }
-    body{ margin:0; padding:10px; font-family:Arial, sans-serif; background:var(--bg); color:var(--text); }
+<style>
+body{font-family:Arial;margin:10px;background:#f3f4f6}
 
-    /* Encabezado */
-    .encabezado table{ width:100%; border-collapse:collapse; margin-bottom:10px; background:#fff; }
-    .encabezado td{ border:2px solid #000; padding:8px; vertical-align:middle; }
-    .logo{ width:20%; text-align:center; background:#f3f4f6; }
-    .logo img{ max-width:140px; max-height:70px; object-fit:contain; display:block; margin:0 auto; }
-    .titulo{ width:60%; text-align:center; font-size:13px; line-height:1.2; }
-    .titulo span{ color:#0b3d91; font-weight:700; }
-    .info{ width:20%; text-align:center; background:#cfefff; font-size:12px; line-height:1.25; }
+/* ENCABEZADO */
+.encabezado table{width:100%;border-collapse:collapse;background:#fff;margin-bottom:10px}
+.encabezado td{border:2px solid #000;padding:6px}
+.logo{text-align:center;width:20%}
+.titulo{text-align:center;width:60%;font-size:13px}
+.info{text-align:center;width:20%;background:#cfefff;font-size:12px}
 
-    /* Tabs */
-    .tabs{ display:flex; gap:6px; margin-bottom:10px; }
-    .tab-btn{
-      flex:1; padding:12px; cursor:pointer; font-weight:900;
-      border:none; border-radius:12px;
-      background:#cbd5e1; color:#334155;
-    }
-    .tab-btn.active{ background:var(--blue); color:#fff; }
+/* BOTONES */
+.toolbar{display:flex;gap:8px;margin-bottom:10px}
+button{padding:10px;border:none;border-radius:10px;font-weight:bold;cursor:pointer}
+.blue{background:#2563eb;color:#fff}
+.green{background:#16a34a;color:#fff}
+.red{background:#ef4444;color:#fff}
 
-    .tab-content{ display:none; }
-    .tab-content.active{ display:block; }
+/* FORM */
+.card{background:#fff;padding:10px;border-radius:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+label{font-size:11px;font-weight:bold}
+input,select{padding:8px;border-radius:8px;border:1px solid #ccc}
 
-    /* Toolbar */
-    .toolbar{
-      display:flex; gap:8px; flex-wrap:wrap;
-      margin:10px 0;
-    }
-    .toolbar button{
-      padding:10px 12px;
-      border:none; border-radius:12px;
-      cursor:pointer; font-weight:900;
-      color:#fff; background:var(--blue);
-    }
-    .toolbar button.sky{ background:var(--sky); }
-    .toolbar button.green{ background:var(--green); }
-    .toolbar button.red{ background:var(--red); }
+/* TABLA */
+table{width:100%;border-collapse:collapse;background:#fff}
+th,td{border:1px solid #ccc;padding:6px;text-align:center;font-size:13px}
+th{background:#eee}
 
-    /* Form */
-    .card-entry{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:12px;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      margin-bottom:10px;
-    }
-    .row{ display:flex; flex-direction:column; gap:6px; }
-    label{ font-size:10px; font-weight:900; color:var(--muted); text-transform:uppercase; }
+/* BOTONES MINI */
+.mini{padding:6px 8px;border-radius:6px;color:#fff;border:none;font-size:11px}
+.mini.blue{background:#2563eb}
+.mini.red{background:#ef4444}
 
-    input, select, textarea{
-      width:100%; box-sizing:border-box;
-      padding:10px; border-radius:12px;
-      border:1px solid var(--border);
-      background:#fff;
-      font-size:14px;
-    }
-    textarea{ resize:vertical; min-height:70px; }
-
-    /* Tables */
-    .table-container{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:16px;
-      overflow:auto;
-    }
-    table{ width:100%; border-collapse:collapse; }
-    th, td{ border-bottom:1px solid var(--border); padding:10px; text-align:center; font-size:13px; vertical-align:top; }
-    th{ position:sticky; top:0; background:#f8fafc; color:var(--muted); font-weight:900; }
-    td.left{ text-align:left; }
-
-    .hint{ font-size:12px; color:var(--muted); margin-top:6px; }
-
-    /* Print */
-    #print-replica{ display:none; }
-    @media print{
-      .tabs, .toolbar, .card-entry, .table-container { display:none !important; }
-      #print-replica{ display:block !important; }
-      body > .encabezado{ display:none !important; } /* evita encabezado duplicado */
-      @page{ size:A4 landscape; margin:0.6cm; }
-      .p-table{ width:100%; border-collapse:collapse; table-layout:fixed; }
-      .p-table th, .p-table td{ border:1px solid #000; padding:4px; font-size:9pt; }
-      .p-table th{ background:#eee; }
-      .p-title{ text-align:center; font-weight:900; margin:8px 0 10px; }
-      .p-sub{ font-size:9pt; color:#111; margin:6px 0 10px; }
-      .p-note{ font-size:8pt; color:#333; }
-      .encabezado-print table{ width:100%; border-collapse:collapse; margin-bottom:8px; }
-      .encabezado-print td{ border:2px solid #000; padding:6px; vertical-align:middle; }
-      .encabezado-print .logo{ width:20%; text-align:center; }
-      .encabezado-print .logo img{ max-width:130px; max-height:60px; object-fit:contain; }
-      .encabezado-print .titulo{ width:60%; text-align:center; font-size:12px; }
-      .encabezado-print .info{ width:20%; text-align:center; font-size:11px; background:#cfefff; }
-    }
-  </style>
+/* DISCRETO */
+.switch{display:flex;align-items:center;gap:6px;font-size:12px;color:#555}
+</style>
 </head>
 
 <body>
 
-  <!-- ENCABEZADO -->
-  <div class="encabezado">
-    <table>
-      <tr>
-        <td class="logo">
-          <img id="logoImg" src="logo.jpg" alt="Logo">
-        </td>
-        <td class="titulo">
-          <strong>SISTEMA DE GESTIÓN DE CALIDAD</strong><br>
-          INSPECCIÓN DE CARCASAS ANTES DEL LAVADO<br>
-          <span>HACCP - PCC 1 FAENA</span>
-        </td>
-        <td class="info">
-          RG-HCCP - PCC - 307/1<br>
-          Emisión: 23/02/2026<br>
-          Rev. 12
-        </td>
-      </tr>
-    </table>
-  </div>
+<div class="encabezado">
+<table>
+<tr>
+<td class="logo"><img src="logo.jpg" width="100"></td>
+<td class="titulo">
+<b>SISTEMA DE GESTIÓN DE CALIDAD</b><br>
+INSPECCIÓN DE CARCASAS<br>
+<b>PCC1</b>
+</td>
+<td class="info">
+Emisión: 23/02/2026<br>
+Rev: 12
+</td>
+</tr>
+</table>
+</div>
 
-  <div class="toolbar">
-    <button class="sky" type="button" onclick="capTime()">⏱️ Tomar hora (dispositivo)</button>
-    <button type="button" onclick="imprimirTodo()">🖨️ Imprimir / Guardar PDF</button>
-    <button class="red" type="button" onclick="clearAll()">🗑️ Borrar todo</button>
-  </div>
+<div class="toolbar">
+<button class="blue" onclick="capTime()">Hora</button>
+<button class="green" onclick="finalizarDia()">Finalizar</button>
+<button class="red" onclick="clearAll()">Borrar</button>
+</div>
 
-  <div class="tabs">
-    <button class="tab-btn active" onclick="openTab(event,'tab1')">REGISTRO</button>
-    <button class="tab-btn" onclick="openTab(event,'tab2')">ACCIONES</button>
-  </div>
+<div class="card">
+<div>
+<label>Garrón</label>
+<input id="garron" readonly>
+</div>
 
-  <!-- REGISTRO -->
-  <div id="tab1" class="tab-content active">
+<div>
+<label>Hora</label>
+<input type="time" id="hora">
 
-    <div class="card-entry">
-      <div class="row">
-        <label>GARRÓN</label>
-        <input id="in-g" readonly>
-        <div class="hint">Se numera automático (1,2,3...).</div>
-      </div>
+<div class="switch">
+<input type="checkbox" id="autoHora" onchange="toggleAutoHora()">
+<span id="autoTxt">Manual</span>
+</div>
 
-      <div class="row">
-        <label>HORA (manual)</label>
-        <input type="time" id="in-h" step="60">
-        <div class="hint">Podés escribir o pegar la hora. En auditoría, se toma automática al guardar.</div>
+</div>
 
-        <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
-          <label style="margin:0; font-size:10px;">Modo Auditoría</label>
-          <input type="checkbox" id="auditMode" onchange="toggleAuditMode()">
-          <span id="auditText" style="font-size:12px; color:var(--muted); font-weight:900;">Manual</span>
-        </div>
-      </div>
+<div>
+<label>Desvío</label>
+<select id="desvio">
+<option>0</option>
+<option>1</option>
+</select>
+</div>
 
-      <div class="row">
-        <label>DESVÍO (0/1)</label>
-        <select id="in-b">
-          <option value="0">0</option>
-          <option value="1">1</option>
-        </select>
-        <div class="hint">ACCIONES aparece solo con “1”.</div>
-      </div>
+<div>
+<label>Resp</label>
+<select id="resp" onchange="guardar()">
+<option value="">-</option>
+<option>MQ</option>
+<option>MD</option>
+<option>WC</option>
+<option>DE</option>
+<option>AA</option>
+</select>
+</div>
+</div>
 
-      <div class="row">
-        <label>RESP (Iniciales)</label>
-        <select id="in-r" onchange="guardarRegistroSelect()">
-          <option value="">Seleccione</option>
-          <option value="MQ">MQ</option>
-          <option value="MD">MD</option>
-          <option value="WC">WC</option>
-          <option value="DE">DE</option>
-          <option value="AA">AA</option>
-        </select>
-        <div class="hint">Al elegir iniciales se guarda el registro.</div>
-      </div>
-    </div>
-
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>GARRÓN</th>
-            <th>HORA</th>
-            <th>0/1</th>
-            <th>RESP</th>
-            <th>IN SITU</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
-
-  </div>
-
-  <!-- ACCIONES -->
-  <div id="tab2" class="tab-content">
-
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Garrón / Lado / Ubicación</th>
-            <th style="width:90px;">Hora desvío</th>
-            <th>Acción correctiva</th>
-            <th style="width:110px;">Hora corrección</th>
-            <th>Restablecimiento</th>
-            <th>Preventiva</th>
-            <th style="width:140px;">Encargado</th>
-          </tr>
-        </thead>
-        <tbody id="actionsBody"></tbody>
-      </table>
-    </div>
-
-    <div class="hint" style="margin-top:8px;">
-      Tip: si un registro está con “1”, acá podés completar lado/ubicación y acciones. Se guarda automático.
-    </div>
-  </div>
-
-  <div id="print-replica"></div>
+<table>
+<thead>
+<tr>
+<th>G</th>
+<th>Hora</th>
+<th>0/1</th>
+<th>Resp</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
 
 <script>
-  /***************
-   * LOGO fallback
-   ***************/
-  (function logoFallback(){
-    const img = document.getElementById("logoImg");
-    if(!img) return;
 
-    const candidates = ["logo.jpg", "logo.jpg.jpeg", "logo.jpeg", "logo.png"];
-    let idx = 0;
+let data = JSON.parse(localStorage.getItem("pcc1")||"[]");
 
-    img.onerror = () => {
-      idx++;
-      if(idx < candidates.length){
-        img.src = candidates[idx];
-      }else{
-        img.style.display = "none";
-        img.parentNode.innerHTML = "<b>LOGO</b>";
-      }
-    };
-    // arranca con el primero
-    img.src = candidates[0];
-  })();
+function save(){
+localStorage.setItem("pcc1",JSON.stringify(data));
+}
 
-  /***************
-   * Storage
-   ***************/
-  const LS_KEY = "logs_pcc_v3";
-  let data = [];
+function capTime(){
+let d=new Date();
+hora.value=d.toTimeString().slice(0,5);
+}
 
-  function loadData(){
-    try{
-      const raw = localStorage.getItem(LS_KEY);
-      data = raw ? JSON.parse(raw) : [];
-      if(!Array.isArray(data)) data = [];
-    }catch{ data = []; }
+function toggleAutoHora(){
+let on=autoHora.checked;
+autoTxt.innerText=on?"Auto":"Manual";
+hora.disabled=on;
+render();
+}
 
-    // normalizar campos
-    data = data.map(d => ({
-      g: d.g ?? "",
-      h: d.h ?? "",
-      h_in_situ: d.h_in_situ ?? "",
-      b: d.b ?? "0",
-      r: d.r ?? "",
+function guardar(){
+if(autoHora.checked) capTime();
 
-      lado: d.lado ?? "",
-      ubicacion: d.ubicacion ?? "",
-      accionCorrectiva: d.accionCorrectiva ?? "",
-      horaCorreccion: d.horaCorreccion ?? "",
-      restablecimiento: d.restablecimiento ?? "",
-      preventiva: d.preventiva ?? "",
-      encargado: d.encargado ?? ""
-    }));
-  }
+data.push({
+g:data.length+1,
+h:hora.value,
+d:desvio.value,
+r:resp.value
+});
 
-  function saveData(){
-    localStorage.setItem(LS_KEY, JSON.stringify(data));
-  }
+resp.value="";
+save();
+update();
+render();
+}
 
-  window.onload = () => {
-    loadData();
-    capTime();         // te la seteo al abrir, pero queda manual (editable)
-    initAuditMode();
-    updateGarron();
-    render();
-  };
+function update(){
+garron.value=data.length+1;
+}
 
-  /***************
-   * Tabs
-   ***************/
-  function openTab(evt, id){
-    document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-    evt.currentTarget.classList.add("active");
-  }
+function render(){
+tabla.innerHTML=data.map((x,i)=>`
+<tr>
+<td>${x.g}</td>
+<td>${x.h}</td>
+<td>${x.d}</td>
+<td>${x.r}</td>
+<td>
+<button class="mini blue" onclick="edit(${i})" ${autoHora.checked?"disabled style='opacity:.3'":""}>✏️</button>
+<button class="mini red" onclick="del(${i})" ${autoHora.checked?"disabled style='opacity:.3'":""}>🗑️</button>
+</td>
+</tr>
+`).join("");
+}
 
-  /***************
-   * Hora
-   ***************/
-  function capTime(){
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2,'0');
-    const mm = String(now.getMinutes()).padStart(2,'0');
-    document.getElementById("in-h").value = `${hh}:${mm}`;
-  }
+function edit(i){
+if(autoHora.checked) return;
+let n=prompt("Editar",data[i].g);
+if(n) data[i].g=n;
+save();
+render();
+}
 
-  function toggleAuditMode(){
-    const on = document.getElementById("auditMode").checked;
-    localStorage.setItem("pcc_audit_mode", on ? "1" : "0");
-    document.getElementById("auditText").textContent = on ? "Auditoría (auto al guardar)" : "Manual";
-  }
+function del(i){
+if(autoHora.checked) return;
+data.splice(i,1);
+save();
+update();
+render();
+}
 
-  function initAuditMode(){
-    const saved = localStorage.getItem("pcc_audit_mode") === "1";
-    const chk = document.getElementById("auditMode");
-    if(chk){
-      chk.checked = saved;
-      document.getElementById("auditText").textContent = saved ? "Auditoría (auto al guardar)" : "Manual";
-    }
-  }
+function clearAll(){
+if(confirm("Borrar todo?")){
+data=[];
+save();
+update();
+render();
+}
+}
 
-  function updateGarron(){
-    document.getElementById("in-g").value = data.length + 1;
-  }
+function finalizarDia(){
+alert("Día guardado");
+}
 
-  /***************
-   * Guardado por select de iniciales
-   ***************/
-  function guardarRegistroSelect(){
-    const sel = document.getElementById("in-r");
-    const val = (sel.value || "").trim().toUpperCase();
-    if(!val) return;
+update();
+render();
 
-    const auditOn = document.getElementById("auditMode")?.checked;
-
-    // Si es auditoría: toma hora automática del dispositivo SI O SI al guardar
-    if(auditOn) capTime();
-
-    const hora = document.getElementById("in-h").value || "";
-    const desvio = document.getElementById("in-b").value || "0";
-
-    data.push({
-      g: data.length + 1,
-      h: hora,
-      h_in_situ: auditOn ? new Date().toISOString() : "",
-      b: desvio,
-      r: val,
-
-      lado: "",
-      ubicacion: "",
-      accionCorrectiva: "",
-      horaCorreccion: "",
-      restablecimiento: "",
-      preventiva: "",
-      encargado: ""
-    });
-
-    sel.value = "";
-    saveData();
-    updateGarron();
-    render();
-
-    // si auditoría, deja hora actualizada para el próximo
-    if(auditOn) capTime();
-  }
-
-  function saveField(idx, field, value){
-    data[idx][field] = value;
-    saveData();
-  }
-
-  /***************
-   * Render
-   ***************/
-  function render(){
-    // REGISTRO
-    document.getElementById("tableBody").innerHTML = data.slice().reverse()
-      .map(d => `
-        <tr>
-          <td>${d.g}</td>
-          <td>${escapeHtml(d.h)}</td>
-          <td>${escapeHtml(d.b)}</td>
-          <td>${escapeHtml(d.r)}</td>
-          <td>${d.h_in_situ ? escapeHtml(d.h_in_situ) : "-"}</td>
-        </tr>
-      `).join("");
-
-    // ACCIONES (solo b == "1")
-    const devs = data.map((d,idx)=>({d,idx})).filter(x => x.d.b === "1");
-
-    document.getElementById("actionsBody").innerHTML = devs.map(x => {
-      const d = x.d, idx = x.idx;
-      return `
-        <tr>
-          <td class="left">
-            <div><b>Garrón ${d.g}</b></div>
-            <div style="margin-top:8px; display:grid; gap:6px;">
-              <select onchange="saveField(${idx},'lado',this.value)">
-                <option value="">Lado</option>
-                <option value="Izquierdo" ${d.lado==="Izquierdo" ? "selected":""}>Izquierdo</option>
-                <option value="Derecho" ${d.lado==="Derecho" ? "selected":""}>Derecho</option>
-              </select>
-
-              <select onchange="saveField(${idx},'ubicacion',this.value)">
-                <option value="">Ubicación</option>
-                <option value="Garrón" ${d.ubicacion==="Garrón" ? "selected":""}>Garrón</option>
-                <option value="Culata" ${d.ubicacion==="Culata" ? "selected":""}>Culata</option>
-                <option value="Nalga - Bola de lomo" ${d.ubicacion==="Nalga - Bola de lomo" ? "selected":""}>Nalga - Bola de lomo</option>
-                <option value="Bifes - Cuadril" ${d.ubicacion==="Bifes - Cuadril" ? "selected":""}>Bifes - Cuadril</option>
-                <option value="Pecho - Matambre - Ijada" ${d.ubicacion==="Pecho - Matambre - Ijada" ? "selected":""}>Pecho - Matambre - Ijada</option>
-                <option value="Lomo - Costillas" ${d.ubicacion==="Lomo - Costillas" ? "selected":""}>Lomo - Costillas</option>
-                <option value="Brazuelo - Cogote" ${d.ubicacion==="Brazuelo - Cogote" ? "selected":""}>Brazuelo - Cogote</option>
-                <option value="Marucha - Paleta" ${d.ubicacion==="Marucha - Paleta" ? "selected":""}>Marucha - Paleta</option>
-                <option value="Vacío - Entraña" ${d.ubicacion==="Vacío - Entraña" ? "selected":""}>Vacío - Entraña</option>
-              </select>
-            </div>
-          </td>
-
-          <td>
-            ${escapeHtml(d.h || "")}
-            <div class="p-note" style="margin-top:6px;">
-              In situ: ${d.h_in_situ ? escapeHtml(d.h_in_situ) : "-"}
-            </div>
-          </td>
-
-          <td><textarea oninput="saveField(${idx},'accionCorrectiva',this.value)">${escapeHtml(d.accionCorrectiva)}</textarea></td>
-
-          <td><input type="time" step="60" value="${escapeAttr(d.horaCorreccion)}"
-                onchange="saveField(${idx},'horaCorreccion',this.value)"></td>
-
-          <td><textarea oninput="saveField(${idx},'restablecimiento',this.value)">${escapeHtml(d.restablecimiento)}</textarea></td>
-
-          <td><textarea oninput="saveField(${idx},'preventiva',this.value)">${escapeHtml(d.preventiva)}</textarea></td>
-
-          <td><input value="${escapeAttr(d.encargado)}" oninput="saveField(${idx},'encargado',this.value)"></td>
-        </tr>
-      `;
-    }).join("");
-  }
-
-  /***************
-   * Print / PDF (Imprimir -> Guardar como PDF)
-   ***************/
-  function headerPrintHTML(){
-    // mismo logo fallback (para impresión también)
-    return `
-      <div class="encabezado-print">
-        <table>
-          <tr>
-            <td class="logo">
-              <img src="logo.jpg" onerror="this.onerror=null;this.src='logo.jpg.jpeg';" alt="Logo">
-            </td>
-            <td class="titulo">
-              <strong>SISTEMA DE GESTIÓN DE CALIDAD</strong><br>
-              INSPECCIÓN DE CARCASAS ANTES DEL LAVADO<br>
-              <span style="font-weight:900; color:#0b3d91;">HACCP - PCC 1 FAENA</span>
-            </td>
-            <td class="info">
-              RG-HCCP - PCC - 307/1<br>
-              Emisión: 23/02/2026<br>
-              Rev. 12
-            </td>
-          </tr>
-        </table>
-      </div>
-    `;
-  }
-
-  function imprimirTodo(){
-    const fecha = new Date().toLocaleDateString("es-AR");
-
-    // REGISTRO
-    let html = `<div class="print-page">`;
-    html += headerPrintHTML();
-    html += `<div class="p-title">REGISTRO PCC 1 - ${fecha}</div>`;
-    html += `
-      <table class="p-table">
-        <thead>
-          <tr>
-            <th>Garrón</th><th>Hora</th><th>0/1</th><th>Resp</th><th>Hora In situ</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${data.map(d => `
-            <tr>
-              <td>${d.g}</td>
-              <td>${escapeHtml(d.h)}</td>
-              <td>${escapeHtml(d.b)}</td>
-              <td>${escapeHtml(d.r)}</td>
-              <td>${d.h_in_situ ? escapeHtml(d.h_in_situ) : "-"}</td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
-    `;
-
-    // ACCIONES
-    const devs = data.filter(d => d.b === "1");
-    html += headerPrintHTML();
-    html += `<div class="p-title">ACCIONES CORRECTIVAS / PREVENTIVAS</div>`;
-    html += `
-      <div class="p-sub">
-        * Lado/Ubicación y acciones se completan solo cuando el registro tiene 1 (desvío).
-      </div>
-      <table class="p-table">
-        <thead>
-          <tr>
-            <th>Garrón</th>
-            <th>Lado</th>
-            <th>Ubicación</th>
-            <th>Hora desvío</th>
-            <th>Hora In situ</th>
-            <th>Acción correctiva</th>
-            <th>Hora corrección</th>
-            <th>Restablecimiento</th>
-            <th>Preventiva</th>
-            <th>Encargado</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${devs.map(d => `
-            <tr>
-              <td>${d.g}</td>
-              <td>${escapeHtml(d.lado)}</td>
-              <td>${escapeHtml(d.ubicacion)}</td>
-              <td>${escapeHtml(d.h)}</td>
-              <td>${d.h_in_situ ? escapeHtml(d.h_in_situ) : "-"}</td>
-              <td>${escapeHtml(d.accionCorrectiva)}</td>
-              <td>${escapeHtml(d.horaCorreccion)}</td>
-              <td>${escapeHtml(d.restablecimiento)}</td>
-              <td>${escapeHtml(d.preventiva)}</td>
-              <td>${escapeHtml(d.encargado)}</td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
-    `;
-
-    html += `</div>`;
-
-    document.getElementById("print-replica").innerHTML = html;
-    setTimeout(() => window.print(), 200);
-  }
-
-  /***************
-   * Clear
-   ***************/
-  function clearAll(){
-    if(confirm("¿Borrar todo el registro guardado en este dispositivo?")){
-      data = [];
-      localStorage.removeItem(LS_KEY);
-      updateGarron();
-      render();
-    }
-  }
-
-  /***************
-   * Escapes
-   ***************/
-  function escapeHtml(s){
-    return (s||"")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;");
-  }
-  function escapeAttr(s){
-    return (s||"")
-      .replaceAll("&","&amp;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;");
-  }
 </script>
 
 </body>
